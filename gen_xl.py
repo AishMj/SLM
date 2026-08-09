@@ -1125,42 +1125,112 @@ for t_ in [
 
 r += 1
 r = blk(r, "PRIMARY SOURCE INDEX")
-r = line(r, "%-52s %-30s %s" % ("PAPER / DOCUMENT", "COVERS", "LOCATION"), bold=True)
+r = line(r, "%-58s %-34s %s" % ("SOURCE", "WHAT IT BACKS", "LOCATION"), bold=True)
+r = line(r, "")
+r = line(r, "--- PEER-REVIEWED PAPERS (evidence grade 1) " + "-"*100, bold=True)
 for w, a, u in [
- ("Qwen2.5-Coder Technical Report", "Qwen2.5-Coder 7B", "arxiv.org/abs/2409.12186"),
- ("Phi-4 Technical Report", "Phi-4 14B", "arxiv.org/abs/2412.08905"),
- ("Phi-3 Technical Report", "Phi-3.5-mini, Phi-3.5-Vision", "arxiv.org/abs/2404.14219"),
- ("The Llama 3 Herd of Models", "Llama 3.1 8B", "arxiv.org/abs/2407.21783"),
- ("StarCoder 2 and The Stack v2", "StarCoder2 15B", "arxiv.org/abs/2402.19173"),
- ("DeepSeek-Coder-V2", "DeepSeek-Coder-V2-Lite", "arxiv.org/abs/2406.11931"),
- ("DeepSeek-R1", "DeepSeek-R1-Distill-Qwen-14B", "arxiv.org/abs/2501.12948"),
- ("Mistral 7B", "Mistral 7B Instruct v0.3", "arxiv.org/abs/2310.06825"),
- ("Gemma 3 Technical Report", "Gemma 3 4B", "arxiv.org/abs/2503.19786"),
- ("Qwen2-VL", "Qwen2-VL 7B", "arxiv.org/abs/2409.12191"),
- ("PaliGemma", "PaliGemma 3B", "arxiv.org/abs/2407.07726"),
- ("Improved Baselines with Visual Instruction Tuning", "LLaVA-1.5 / 1.6", "arxiv.org/abs/2310.03744"),
- ("HumanEval / Evaluating LLMs Trained on Code", "HumanEval benchmark definition", "arxiv.org/abs/2107.03374"),
- ("MultiPL-E", "MultiPL-E C++ benchmark definition", "arxiv.org/abs/2208.08227"),
- ("MMLU / Measuring Massive Multitask Understanding", "MMLU benchmark definition", "arxiv.org/abs/2009.03300"),
- ("MMMU", "MMMU benchmark definition", "arxiv.org/abs/2311.16502"),
- ("DocVQA", "DocVQA benchmark definition", "arxiv.org/abs/2007.00398"),
- ("LoRA", "Fine-tuning method", "arxiv.org/abs/2106.09685"),
- ("QLoRA", "Fine-tuning method", "arxiv.org/abs/2305.14314"),
- ("vLLM / PagedAttention", "Inference engine", "arxiv.org/abs/2309.06180"),
- ("SGLang / RadixAttention", "Inference engine", "arxiv.org/abs/2312.07104"),
+ ("Qwen2.5-Coder Technical Report", "Qwen C++ 75.6 (Tbl 17), HumanEval/MBPP (Tbl 16)", "arxiv.org/abs/2409.12186"),
+ ("Phi-4 Technical Report", "Phi-4 - paper backing the model card figures", "arxiv.org/abs/2412.08905"),
+ ("Phi-3 Technical Report", "Phi-3.5-mini and Phi-3.5-Vision lineage", "arxiv.org/abs/2404.14219"),
+ ("The Llama 3 Herd of Models", "Llama 3.1 8B architecture and training", "arxiv.org/abs/2407.21783"),
+ ("StarCoder 2 and The Stack v2", "StarCoder2 - Tbl 6,9,10,13,14,15,16,17; Sec 7.2.1", "arxiv.org/abs/2402.19173"),
+ ("DeepSeek-Coder-V2", "DeepSeek-Lite C++ 75.8, HumanEval, MBPP+ (Tbl 3)", "arxiv.org/abs/2406.11931"),
+ ("DeepSeek-R1", "R1-Distill-14B distillation method and results", "arxiv.org/abs/2501.12948"),
+ ("Mistral 7B", "MMLU 62.5 - NOTE: v0.1 BASE model, not v0.3", "arxiv.org/abs/2310.06825"),
+ ("Gemma 3 Technical Report", "Gemma 3 4B architecture and training", "arxiv.org/abs/2503.19786"),
+ ("Qwen2-VL", "Qwen2-VL 7B vision architecture", "arxiv.org/abs/2409.12191"),
+ ("PaliGemma", "PaliGemma 3B - fine-tuned transfer results", "arxiv.org/abs/2407.07726"),
+ ("Improved Baselines with Visual Instruction Tuning", "LLaVA-1.5 baseline (NOT the 1.6 figures)", "arxiv.org/abs/2310.03744"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- OFFICIAL MODEL CARDS (evidence grade 2 - PRIMARY where no paper exists) " + "-"*60, bold=True)
+for w, a, u in [
+ ("IBM granite-3.3-8b-instruct card", "HumanEval 89.73, MMLU 65.54, GSM8K 80.89", "huggingface.co/ibm-granite/granite-3.3-8b-instruct"),
+ ("Microsoft phi-4 card", "HumanEval 82.6, MMLU 84.8, 1920xH100 21 days", "huggingface.co/microsoft/phi-4"),
+ ("Microsoft Phi-3.5-mini-instruct card", "62.8 / 69 / 86.2, 512xH100 10 days", "huggingface.co/microsoft/Phi-3.5-mini-instruct"),
+ ("Microsoft Phi-3.5-vision-instruct card", "MMBench 81.9, MMMU 43.0, 256xA100 6 days", "huggingface.co/microsoft/Phi-3.5-vision-instruct"),
+ ("Qwen2.5-Coder-7B-Instruct card", "7.61B params, 28 layers, 4 KV heads, 131072 ctx", "huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct"),
+ ("Qwen2-VL-7B-Instruct card", "DocVQA 94.5, TextVQA 84.3, MMMU 54.1", "huggingface.co/Qwen/Qwen2-VL-7B-Instruct"),
+ ("Meta Llama-3.1-8B-Instruct card", "HumanEval 72.6, MMLU 69.4 vs CoT 73.0, GPU-hours", "huggingface.co/meta-llama/Llama-3.1-8B-Instruct"),
+ ("Meta Llama-3.2-3B-Instruct card", "MMLU 63.4, GSM8K 77.7, EU clause scope", "huggingface.co/meta-llama/Llama-3.2-3B-Instruct"),
+ ("Meta Llama 3.2 MODEL_CARD_VISION.md", "11B Vision INSTRUCT table (not pretrained)", "github.com/meta-llama/llama-models"),
+ ("BigCode starcoder2-15b card", "1024xH100, 16384 ctx, HumanEval 46.3", "huggingface.co/bigcode/starcoder2-15b"),
+ ("Google codegemma-7b-it card", "HumanEval 56.1, BabelCode C++ 42.2, 8K ctx", "huggingface.co/google/codegemma-7b-it"),
+ ("Google gemma-3-4b-it card", "HumanEval 36.0, MMLU 59.6, 128K in / 8K out", "huggingface.co/google/gemma-3-4b-it"),
+ ("Google paligemma-3b-mix-448 card", "512 token ctx, fine-tuned transfer scores", "huggingface.co/google/paligemma-3b-mix-448"),
+ ("DeepSeek-R1-Distill-Qwen-14B card", "MATH-500 93.9, LiveCodeBench 53.1, Codeforces 1481", "huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"),
+ ("DeepSeek-Coder-V2-Lite-Instruct card", "MoE config, licence terms", "huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct"),
+ ("OpenGVLab InternVL2-8B card", "MMBench 81.7, MMMU 51.8, DocVQA 91.6, 8K ctx", "huggingface.co/OpenGVLab/InternVL2-8B"),
+ ("llava-hf llava-v1.6-vicuna-13b-hf card", "Licence = LLAMA 2 (publishes no benchmarks)", "huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf"),
+ ("vikhyatk/moondream2 card", "DocVQA 79.3, TextVQA 76.3, COCO detect 51.2", "huggingface.co/vikhyatk/moondream2"),
+ ("mistralai Mistral-7B-Instruct-v0.3 card", "PUBLISHES NO BENCHMARKS - that is the finding", "huggingface.co/mistralai/Mistral-7B-Instruct-v0.3"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- OFFICIAL BLOGS AND VENDOR DOCS (evidence grade 3) " + "-"*88, bold=True)
+for w, a, u in [
+ ("LLaVA-NeXT release blog", "LLaVA-1.6 13B: VQAv2 82.8, MMMU 36.2, TextVQA 67.1", "llava-vl.github.io/blog/2024-01-30-llava-next"),
+ ("Qwen2.5-Coder family blog", "Qwen family overview (no per-model numbers)", "qwenlm.github.io/blog/qwen2.5-coder-family"),
+ ("Google CodeGemma docs", "CodeGemma model documentation", "ai.google.dev/gemma/docs/codegemma"),
+ ("InternVL project site", "InternVL2 family documentation", "internvl.github.io"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- TOKEN-RATE MEASUREMENTS (evidence grade 4 - the ONLY published source for tok/s) " + "-"*55, bold=True)
+for w, a, u in [
+ ("LLM tokens/sec benchmarks, llama.cpp b3520", "RTX4090 Q4_K_M: 7B 135, 13B 78, 34B 42 tok/s", "mustafa.net/llm-tokens-per-second-benchmarks"),
+ ("Ollama vs llama.cpp benchmark", "Llama 3.1 8B Q4_K_M on 4090 = 95-110 tok/s", "markaicode.com/benchmarks/ollama-vs-llamacpp-benchmark"),
+ ("Qwen3-8B on RTX 4090 recipe", "llama.cpp 104 tok/s at 16K context cross-check", "smeltcore.com"),
+ ("AMD EPYC LLM inference benchmark", "CPU: EPYC 7763 7B Q4_K_M = 15 tok/s", "blog.leaseweb.com"),
+ ("llama.cpp VRAM requirements guide", "Concurrency: ~18 tok/s per user, 4 users, 24GB", "localllm.in/blog/llamacpp-vram-requirements-for-local-llms"),
+ ("myaihardware llama.cpp benchmarks", "CPU desktop band 4-15 tok/s at Q4_K_M", "myaihardware.com/llama-cpp-benchmarks"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- BENCHMARK DEFINITIONS (what each metric actually measures) " + "-"*80, bold=True)
+for w, a, u in [
+ ("HumanEval / Evaluating LLMs Trained on Code", "164 Python problems, pass@1", "arxiv.org/abs/2107.03374"),
+ ("MultiPL-E", "HumanEval translated to 18 languages incl. C++", "arxiv.org/abs/2208.08227"),
+ ("MBPP", "Mostly Basic Python Problems", "arxiv.org/abs/2108.07732"),
+ ("EvalPlus (HumanEval+ / MBPP+)", "80x and 35x more tests than the originals", "arxiv.org/abs/2305.01210"),
+ ("CanItEdit", "Code EDITING - closest proxy to a retry loop", "arxiv.org/abs/2312.12450"),
+ ("CRUXEval", "Code reasoning, understanding and execution", "arxiv.org/abs/2401.03065"),
+ ("RepoBench", "Repository-level next-line completion", "arxiv.org/abs/2306.03091"),
+ ("MMLU", "57-subject multitask accuracy", "arxiv.org/abs/2009.03300"),
+ ("GSM8K", "Grade-school math word problems", "arxiv.org/abs/2110.14168"),
+ ("MATH", "Competition mathematics", "arxiv.org/abs/2103.03874"),
+ ("MMMU", "College-level multimodal understanding", "arxiv.org/abs/2311.16502"),
+ ("DocVQA", "Document visual question answering", "arxiv.org/abs/2007.00398"),
+ ("TextVQA", "Reading text within images", "arxiv.org/abs/1904.08920"),
+ ("LiveCodeBench", "Contamination-free live coding problems", "arxiv.org/abs/2403.07974"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- ENGINEERING AND HARDWARE SOURCES " + "-"*105, bold=True)
+for w, a, u in [
  ("llama.cpp - supported backends and build docs", "ALL inference hardware support claims", "github.com/ggml-org/llama.cpp"),
  ("llama.cpp k-quants PR #1684", "ALL quantization accuracy deltas", "github.com/ggml-org/llama.cpp/pull/1684"),
- ("NVIDIA Ada GPU Architecture Whitepaper", "RTX 4090 memory bandwidth (1008 GB/s)", "nvidia.com - Ada whitepaper"),
- ("Apache License 2.0", "Licence text", "apache.org/licenses/LICENSE-2.0"),
- ("Llama 3.x Community Licence", "Licence text incl. EU multimodal clause", "llama.com/llama3_3/license"),
- ("Gemma Terms of Use", "Licence text", "ai.google.dev/gemma/terms"),
- ("BigCode OpenRAIL-M v1", "Licence text incl. flow-down duty", "bigcode-project.org/docs/pages/model-license"),
- ("DeepSeek Model Licence", "Licence text incl. use restrictions", "github.com/deepseek-ai/DeepSeek-LLM"),
- ("NDAA Section 889 / FAR 52.204-25", "Component-origin procurement rule", "acquisition.gov/far/52.204-25"),
- ("EvalPlus Leaderboard", "Mistral 7B HumanEval (no paper exists)", "evalplus.github.io/leaderboard.html"),
- ("OpenCompass Multimodal Leaderboard", "InternVL2 (partly leaderboard-sourced)", "rank.opencompass.org.cn/leaderboard-multimodal"),
+ ("NVIDIA Ada GPU Architecture Whitepaper", "RTX 4090 bandwidth 1008 GB/s", "nvidia.com - Ada whitepaper"),
+ ("vLLM / PagedAttention", "Concurrency behaviour", "arxiv.org/abs/2309.06180"),
+ ("SGLang / RadixAttention", "Prefix caching for the shared 6-8K header", "arxiv.org/abs/2312.07104"),
+ ("LoRA", "Fine-tuning VRAM baseline", "arxiv.org/abs/2106.09685"),
+ ("QLoRA", "4-bit fine-tuning VRAM", "arxiv.org/abs/2305.14314"),
 ]:
-    r = line(r, "%-52s %-30s %s" % (w, a, u))
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
+r = line(r, "")
+r = line(r, "--- LICENCE AND COMPLIANCE TEXTS " + "-"*109, bold=True)
+for w, a, u in [
+ ("Apache License 2.0", "Qwen, Granite, Mistral, Moondream, Qwen2-VL", "apache.org/licenses/LICENSE-2.0"),
+ ("MIT License", "Phi-4, Phi-3.5-mini, Phi-3.5-Vision, InternVL2, R1", "opensource.org/license/mit"),
+ ("Llama 3.x Community Licence", "EU MULTIMODAL EXCLUSION - exact wording", "llama.com/llama3_3/license"),
+ ("Llama 2 Community Licence", "LLaVA-1.6 effective licence via Vicuna", "ai.meta.com/llama/license"),
+ ("Gemma Terms of Use", "CodeGemma, Gemma 3, PaliGemma", "ai.google.dev/gemma/terms"),
+ ("BigCode OpenRAIL-M v1", "StarCoder2 - flow-down duty on derivatives", "bigcode-project.org/docs/pages/model-license"),
+ ("DeepSeek Model Licence", "Use restrictions attachment", "github.com/deepseek-ai/DeepSeek-LLM"),
+ ("NDAA Section 889 / FAR 52.204-25", "Component-origin procurement rule", "acquisition.gov/far/52.204-25"),
+]:
+    r = line(r, "%-58s %-34s %s" % (w, a, u))
 
 OUT = "/home/h412581/Downloads/ipoefgfefs_SLM_Matrix.xlsx"
 wb.save(OUT)
