@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="http://gmpg.org/xfn/11">
+
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO plugin v28.2 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<title>EPYC LLM Inference Benchmark: CPU vs GPU Cost Per Token</title>
+	<meta name="description" content="AMD EPYC LLM inference benchmark: real tokens-per-second data for 7B–20B models and a direct CPU vs GPU cost-per-token comparison." />
+	<link rel="canonical" href="https://blog.leaseweb.com/2026/04/05/amd-epyc-llm-inference-benchmark-cpu-vs-gpu/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="EPYC LLM Inference Benchmark: CPU vs GPU Cost Per Token" />
+	<meta property="og:description" content="AMD EPYC LLM inference benchmark: real tokens-per-second data for 7B–20B models and a direct CPU vs GPU cost-per-token comparison." />
+	<meta property="og:url" content="https://blog.leaseweb.com/2026/04/05/amd-epyc-llm-inference-benchmark-cpu-vs-gpu/" />
+	<meta property="og:site_name" content="Leaseweb Blog" />
+	<meta property="article:published_time" content="2026-04-05T12:39:29+00:00" />
+	<meta property="article:modified_time" content="2026-07-17T12:51:09+00:00" />
+	<meta property="og:image" content="http://blog.leaseweb.com/wp-content/uploads/BLOG-HEADER-1920x531-2-1.png" />
+	<meta property="og:image:width" content="1920" />
+	<meta property="og:image:height" content="531" />
+	<meta property="og:image:type" content="image/png" />
+	<meta name="author" content="Fran Baigorri Hauen" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"Article","@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#article","isPartOf":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/"},"author":{"name":"Fran Baigorri Hauen","@id":"https:\/\/blog.leaseweb.com\/#\/schema\/person\/f36df42ef2d14306598f8b706fc9be1e"},"headline":"AMD EPYC LLM Inference Benchmark: CPU Performance for 7B–20B Models and TTS Workloads","datePublished":"2026-04-05T12:39:29+00:00","dateModified":"2026-07-17T12:51:09+00:00","mainEntityOfPage":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/"},"wordCount":869,"commentCount":0,"publisher":{"@id":"https:\/\/blog.leaseweb.com\/#organization"},"image":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#primaryimage"},"thumbnailUrl":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/BLOG-HEADER-1920x531-2-1.png","articleSection":["Dedicated Servers","DevOPs"],"inLanguage":"en-US","potentialAction":[{"@type":"CommentAction","name":"Comment","target":["https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#respond"]}]},{"@type":"WebPage","@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/","url":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/","name":"EPYC LLM Inference Benchmark: CPU vs GPU Cost Per Token","isPartOf":{"@id":"https:\/\/blog.leaseweb.com\/#website"},"primaryImageOfPage":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#primaryimage"},"image":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#primaryimage"},"thumbnailUrl":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/BLOG-HEADER-1920x531-2-1.png","datePublished":"2026-04-05T12:39:29+00:00","dateModified":"2026-07-17T12:51:09+00:00","description":"AMD EPYC LLM inference benchmark: real tokens-per-second data for 7B–20B models and a direct CPU vs GPU cost-per-token comparison.","breadcrumb":{"@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#primaryimage","url":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/BLOG-HEADER-1920x531-2-1.png","contentUrl":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/BLOG-HEADER-1920x531-2-1.png","width":1920,"height":531,"caption":"GPU; AI"},{"@type":"BreadcrumbList","@id":"https:\/\/blog.leaseweb.com\/2026\/04\/05\/amd-epyc-llm-inference-benchmark-cpu-vs-gpu\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Archive","item":"https:\/\/blog.leaseweb.com\/posts\/"},{"@type":"ListItem","position":2,"name":"AMD EPYC LLM Inference Benchmark: CPU Performance for 7B–20B Models and TTS Workloads"}]},{"@type":"WebSite","@id":"https:\/\/blog.leaseweb.com\/#website","url":"https:\/\/blog.leaseweb.com\/","name":"Leaseweb Blog","description":"Leaseweb is a quality cloud provider and operator of a first-class worldwide network.","publisher":{"@id":"https:\/\/blog.leaseweb.com\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/blog.leaseweb.com\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https:\/\/blog.leaseweb.com\/#organization","name":"Leaseweb Blog","url":"https:\/\/blog.leaseweb.com\/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/blog.leaseweb.com\/#\/schema\/logo\/image\/","url":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/2018\/07\/logo.svg","contentUrl":"https:\/\/blog.leaseweb.com\/wp-content\/uploads\/2018\/07\/logo.svg","caption":"Leaseweb Blog"},"image":{"@id":"https:\/\/blog.leaseweb.com\/#\/schema\/logo\/image\/"}},{"@type":"Person","@id":"https:\/\/blog.leaseweb.com\/#\/schema\/person\/f36df42ef2d14306598f8b706fc9be1e","name":"Fran Baigorri Hauen","image":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/secure.gravatar.com\/avatar\/0c844d70f2a28cf9aee2e3d6c67606ec6f1619d84e33bf4fe85c426c3e9be190?s=96&d=mm&r=g","url":"https:\/\/secure.gravatar.com\/avatar\/0c844d70f2a28cf9aee2e3d6c67606ec6f1619d84e33bf4fe85c426c3e9be190?s=96&d=mm&r=g","contentUrl":"https:\/\/secure.gravatar.com\/avatar\/0c844d70f2a28cf9aee2e3d6c67606ec6f1619d84e33bf4fe85c426c3e9be190?s=96&d=mm&r=g","caption":"Fran Baigorri Hauen"},"url":"https:\/\/blog.leaseweb.com\/author\/f-baigorrihauenglobal-leaseweb-com\/"}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel='dns-prefetch' href='//static.addtoany.com' />
+<link rel='dns-prefetch' href='//js-eu1.hs-scripts.com' />
+<link rel='dns-prefetch' href='//www.googletagmanager.com' />
+<link rel="alternate" type="application/rss+xml" title="Leaseweb Blog &raquo; Feed" href="https://blog.leaseweb.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Leaseweb Blog &raquo; Comments Feed" href="https://blog.leaseweb.com/comments/feed/" />
+<script type="text/javascript" id="wpp-js" src="https://blog.leaseweb.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.4.0" data-sampling="0" data-sampling-rate="100" data-api-url="https://blog.leaseweb.com/wp-json/wordpress-popular-posts" data-post-id="8813" data-token="421302aa5b" data-lang="0" data-debug="0"></script>
+<link rel="alternate" type="application/rss+xml" title="Leaseweb Blog &raquo; AMD EPYC LLM Inference Benchmark: CPU Performance for 7B–20B Models and TTS Workloads Comments Feed" href="https://blog.leaseweb.com/2026/04/05/amd-epyc-llm-inference-benchmark-cpu-vs-gpu/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://blog.leaseweb.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fblog.leaseweb.com%2F2026%2F04%2F05%2Famd-epyc-llm-inference-benchmark-cpu-vs-gpu%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://blog.leaseweb.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fblog.leaseweb.com%2F2026%2F04%2F05%2Famd-epyc-llm-inference-benchmark-cpu-vs-gpu%2F&#038;format=xml" />
+<style id='wp-img-auto-sizes-contain-inline-css' type='text/css'>
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id='wp-emoji-styles-inline-css' type='text/css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id='wp-block-library-inline-css' type='text/css'>
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}.has-text-align-center{text-align:center}.has-text-align-left{text-align:left}.has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-wrap:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=wp-block-library-inline-css */
+</style>
+<style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+<link rel='stylesheet' id='mpp_gutenberg-css' href='https://blog.leaseweb.com/wp-content/plugins/metronet-profile-picture/dist/blocks.style.build.css?ver=2.6.4' type='text/css' media='all' />
+<style id='global-styles-inline-css' type='text/css'>
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='related-posts-by-taxonomy-css' href='https://blog.leaseweb.com/wp-content/plugins/related-posts-by-taxonomy/includes/assets/css/styles.css?ver=1f3407d6b21fcd85a80f7022a3ab7163' type='text/css' media='all' />
+<link rel='stylesheet' id='wordpress-popular-posts-css-css' href='https://blog.leaseweb.com/wp-content/plugins/wordpress-popular-posts/assets/css/wpp.css?ver=7.4.0' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-syntax-css-css' href='https://blog.leaseweb.com/wp-content/plugins/wp-syntax/css/wp-syntax.css?ver=1.2' type='text/css' media='all' />
+<link rel='stylesheet' id='open-iconic-bootstrap-css' href='https://blog.leaseweb.com/wp-content/themes/leaseweb-blog/assets/css/open-iconic-bootstrap.css?ver=v4.0.0' type='text/css' media='all' />
+<link rel='stylesheet' id='bootstrap-4-css' href='https://blog.leaseweb.com/wp-content/themes/leaseweb-blog/assets/css/bootstrap.css?ver=v4.0.0' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-bootstrap-4-style-css' href='https://blog.leaseweb.com/wp-content/themes/leaseweb-blog/style.css?ver=1.0.2' type='text/css' media='all' />
+<link rel='stylesheet' id='slickr-flickr-css' href='https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/styles/public.css?ver=2.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='slickr-flickr-lightbox-css' href='https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/styles/lightGallery.css?ver=1.0' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css' href='https://blog.leaseweb.com/wp-includes/css/dashicons.min.css?ver=1f3407d6b21fcd85a80f7022a3ab7163' type='text/css' media='all' />
+<link rel='stylesheet' id='thickbox-css' href='https://blog.leaseweb.com/wp-includes/js/thickbox/thickbox.css?ver=1f3407d6b21fcd85a80f7022a3ab7163' type='text/css' media='all' />
+<link rel='stylesheet' id='galleria-classic-css' href='https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/galleria/themes/classic/galleria.classic.css?ver=1.6.1' type='text/css' media='all' />
+<link rel='stylesheet' id='addtoany-css' href='https://blog.leaseweb.com/wp-content/plugins/add-to-any/addtoany.min.css?ver=1.16' type='text/css' media='all' />
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1" id="jquery-core-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js"></script>
+<script type="text/javascript" id="addtoany-core-js-before">
+/* <![CDATA[ */
+window.a2a_config=window.a2a_config||{};a2a_config.callbacks=[];a2a_config.overlays=[];a2a_config.templates={};
+
+//# sourceURL=addtoany-core-js-before
+/* ]]> */
+</script>
+<script type="text/javascript" defer src="https://static.addtoany.com/menu/page.js" id="addtoany-core-js"></script>
+<script type="text/javascript" defer src="https://blog.leaseweb.com/wp-content/plugins/add-to-any/addtoany.min.js?ver=1.1" id="addtoany-jquery-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/scripts/lightGallery.min.js?ver=1.0" id="slickr-flickr-lightbox-js"></script>
+<script type="text/javascript" id="thickbox-js-extra">
+/* <![CDATA[ */
+var thickboxL10n = {"next":"Next \u003E","prev":"\u003C Prev","image":"Image","of":"of","close":"Close","noiframes":"This feature requires inline frames. You have iframes disabled or your browser does not support them.","loadingAnimation":"https://blog.leaseweb.com/wp-includes/js/thickbox/loadingAnimation.gif"};
+//# sourceURL=thickbox-js-extra
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-includes/js/thickbox/thickbox.js?ver=3.1-20121105" id="thickbox-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/galleria/galleria-1.6.1.min.js?ver=1.6.1" id="galleria-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/galleria/themes/classic/galleria.classic.min.js?ver=1.6.1" id="galleria-classic-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/scripts/responsiveslides.min.js?ver=1.54" id="rslides-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/slickr-flickr/scripts/public.js?ver=2.8.1" id="slickr-flickr-js"></script>
+
+<!-- Google tag (gtag.js) snippet added by Site Kit -->
+<!-- Google Analytics snippet added by Site Kit -->
+<script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=GT-PBSGVQZ" id="google_gtagjs-js" async></script>
+<script type="text/javascript" id="google_gtagjs-js-after">
+/* <![CDATA[ */
+window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}
+gtag("set","linker",{"domains":["blog.leaseweb.com"]});
+gtag("js", new Date());
+gtag("set", "developer_id.dZTNiMT", true);
+gtag("config", "GT-PBSGVQZ");
+//# sourceURL=google_gtagjs-js-after
+/* ]]> */
+</script>
+<link rel="https://api.w.org/" href="https://blog.leaseweb.com/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://blog.leaseweb.com/wp-json/wp/v2/posts/8813" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://blog.leaseweb.com/xmlrpc.php?rsd" />
+
+<link rel='shortlink' href='https://blog.leaseweb.com/?p=8813' />
+
+		<!-- GA Google Analytics @ https://m0n.co/ga -->
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+			ga('create', 'UA-9717036-1', 'auto');
+			ga('send', 'pageview');
+		</script>
+
+	<meta name="generator" content="Site Kit by Google 1.183.0" />			<!-- DO NOT COPY THIS SNIPPET! Start of Page Analytics Tracking for HubSpot WordPress plugin v11.3.65-->
+			<script class="hsq-set-content-id" data-content-id="blog-post">
+				var _hsq = _hsq || [];
+				_hsq.push(["setContentType", "blog-post"]);
+			</script>
+			<!-- DO NOT COPY THIS SNIPPET! End of Page Analytics Tracking for HubSpot WordPress plugin -->
+			<meta name="og:url" content="https://blog.leaseweb.com/2026/04/05/amd-epyc-llm-inference-benchmark-cpu-vs-gpu/" />            <style id="wpp-loading-animation-styles">@-webkit-keyframes bgslide{from{background-position-x:0}to{background-position-x:-200%}}@keyframes bgslide{from{background-position-x:0}to{background-position-x:-200%}}.wpp-widget-block-placeholder,.wpp-shortcode-placeholder{margin:0 auto;width:60px;height:3px;background:#dd3737;background:linear-gradient(90deg,#dd3737 0%,#571313 10%,#dd3737 100%);background-size:200% auto;border-radius:3px;-webkit-animation:bgslide 1s infinite linear;animation:bgslide 1s infinite linear}</style>
+            <link rel="pingback" href="https://blog.leaseweb.com/xmlrpc.php">		<style type="text/css">
+					.site-title,
+			.site-description {
+				position: absolute;
+				clip: rect(1px, 1px, 1px, 1px);
+			}
+				</style>
+		<style type="text/css" id="custom-background-css">
+body.custom-background { background-color: #ffffff; }
+</style>
+	<link rel="icon" href="https://blog.leaseweb.com/wp-content/uploads/2018/09/favicon.png" sizes="32x32" />
+<link rel="icon" href="https://blog.leaseweb.com/wp-content/uploads/2018/09/favicon.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://blog.leaseweb.com/wp-content/uploads/2018/09/favicon.png" />
+<meta name="msapplication-TileImage" content="https://blog.leaseweb.com/wp-content/uploads/2018/09/favicon.png" />
+		<style type="text/css" id="wp-custom-css">
+			/* modify card colors */
+.post.hentry .card-body {
+    background: #f2f2f2;
+}
+
+/* Style code blocks */
+pre {
+    background: #f5f7fa; /* light gray */
+    border: 1px solid #dce1e7;
+    border-radius: 6px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+		</style>
+		<style id="kirki-inline-styles">.custom-logo{height:52px;width:auto;}.navbar.bg-dark{background-color:#222222 !important;}.btn-link,.btn-outline-primary,.content-area .sp-the-post .entry-header .entry-title a:hover,a{color:#0d3dcf;}.btn-primary,.button.add_to_cart_button,.price_slider_amount button[type="submit"],.sp-services-section .sp-single-service .sp-service-icon,.wc-proceed-to-checkout .checkout-button.button,input[type="button"],input[type="reset"],input[type="submit"]{background-color:#0d3dcf;}.btn-outline-primary,.btn-primary,.button.add_to_cart_button,.price_slider_amount button[type="submit"],.wc-proceed-to-checkout .checkout-button.button,input[type="button"],input[type="reset"],input[type="submit"]{border-color:#0d3dcf;}.btn-outline-primary:hover{background-color:#0d3dcf;border-color:#0d3dcf;}.entry-title a:hover{color:#0d3dcf !important;}.btn-outline-primary:focus,.btn-primary:focus{-webkit-box-shadow:0 0 0 0.1rem #0d3dcf;-moz-box-shadow:0 0 0 0.1rem #0d3dcf;box-shadow:0 0 0 0.1rem #0d3dcf;}.form-row.place-order button[type="submit"],.shop_table.shop_table_responsive.woocommerce-cart-form__contents button[type="submit"],.single-product .summary.entry-summary button[type="submit"]{background-color:#0d3dcf;border-color:#0d3dcf;}.btn-link:hover,.comments-link a:hover,.edit-link a:hover,.entry-meta a:hover,a:active,a:focus,a:hover{color:#0069d9;}.btn-primary:active,.btn-primary:focus,.btn-primary:hover,.btn-primary:not(:disabled):not(.disabled):active,.button.add_to_cart_button:hover,.price_slider_amount button[type="submit"]:hover,.wc-proceed-to-checkout .checkout-button.button:hover,input[type="button"]:active,input[type="button"]:focus,input[type="button"]:hover,input[type="submit"]:active,input[type="submit"]:focus,input[type="submit"]:hover{background-color:#0069d9;border-color:#0069d9;}.form-row.place-order button[type="submit"]:hover,.shop_table.shop_table_responsive.woocommerce-cart-form__contents button[type="submit"]:hover,.single-product .summary.entry-summary button[type="submit"]:hover{background-color:#0069d9 !important;border-color:#0069d9 !important;}.site-footer.bg-white{background-color:#5685c4 !important;}.site-footer.text-muted{color:#dddddd !important;}.site-footer a{color:#ffffff !important;}body,button,input,optgroup,select,textarea{font-family:Open Sans;font-weight:400;}.h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;font-weight:500;}.container{max-width:1240px;}.elementor-section.elementor-section-boxed>.elementor-container{max-width:1240px;}/* cyrillic-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4taVIGxA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4kaVIGxA.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4saVIGxA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4jaVIGxA.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* hebrew */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4iaVIGxA.woff2) format('woff2');
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+/* math */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5caVIGxA.woff2) format('woff2');
+  unicode-range: U+0302-0303, U+0305, U+0307-0308, U+0310, U+0312, U+0315, U+031A, U+0326-0327, U+032C, U+032F-0330, U+0332-0333, U+0338, U+033A, U+0346, U+034D, U+0391-03A1, U+03A3-03A9, U+03B1-03C9, U+03D1, U+03D5-03D6, U+03F0-03F1, U+03F4-03F5, U+2016-2017, U+2034-2038, U+203C, U+2040, U+2043, U+2047, U+2050, U+2057, U+205F, U+2070-2071, U+2074-208E, U+2090-209C, U+20D0-20DC, U+20E1, U+20E5-20EF, U+2100-2112, U+2114-2115, U+2117-2121, U+2123-214F, U+2190, U+2192, U+2194-21AE, U+21B0-21E5, U+21F1-21F2, U+21F4-2211, U+2213-2214, U+2216-22FF, U+2308-230B, U+2310, U+2319, U+231C-2321, U+2336-237A, U+237C, U+2395, U+239B-23B7, U+23D0, U+23DC-23E1, U+2474-2475, U+25AF, U+25B3, U+25B7, U+25BD, U+25C1, U+25CA, U+25CC, U+25FB, U+266D-266F, U+27C0-27FF, U+2900-2AFF, U+2B0E-2B11, U+2B30-2B4C, U+2BFE, U+3030, U+FF5B, U+FF5D, U+1D400-1D7FF, U+1EE00-1EEFF;
+}
+/* symbols */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5OaVIGxA.woff2) format('woff2');
+  unicode-range: U+0001-000C, U+000E-001F, U+007F-009F, U+20DD-20E0, U+20E2-20E4, U+2150-218F, U+2190, U+2192, U+2194-2199, U+21AF, U+21E6-21F0, U+21F3, U+2218-2219, U+2299, U+22C4-22C6, U+2300-243F, U+2440-244A, U+2460-24FF, U+25A0-27BF, U+2800-28FF, U+2921-2922, U+2981, U+29BF, U+29EB, U+2B00-2BFF, U+4DC0-4DFF, U+FFF9-FFFB, U+10140-1018E, U+10190-1019C, U+101A0, U+101D0-101FD, U+102E0-102FB, U+10E60-10E7E, U+1D2C0-1D2D3, U+1D2E0-1D37F, U+1F000-1F0FF, U+1F100-1F1AD, U+1F1E6-1F1FF, U+1F30D-1F30F, U+1F315, U+1F31C, U+1F31E, U+1F320-1F32C, U+1F336, U+1F378, U+1F37D, U+1F382, U+1F393-1F39F, U+1F3A7-1F3A8, U+1F3AC-1F3AF, U+1F3C2, U+1F3C4-1F3C6, U+1F3CA-1F3CE, U+1F3D4-1F3E0, U+1F3ED, U+1F3F1-1F3F3, U+1F3F5-1F3F7, U+1F408, U+1F415, U+1F41F, U+1F426, U+1F43F, U+1F441-1F442, U+1F444, U+1F446-1F449, U+1F44C-1F44E, U+1F453, U+1F46A, U+1F47D, U+1F4A3, U+1F4B0, U+1F4B3, U+1F4B9, U+1F4BB, U+1F4BF, U+1F4C8-1F4CB, U+1F4D6, U+1F4DA, U+1F4DF, U+1F4E3-1F4E6, U+1F4EA-1F4ED, U+1F4F7, U+1F4F9-1F4FB, U+1F4FD-1F4FE, U+1F503, U+1F507-1F50B, U+1F50D, U+1F512-1F513, U+1F53E-1F54A, U+1F54F-1F5FA, U+1F610, U+1F650-1F67F, U+1F687, U+1F68D, U+1F691, U+1F694, U+1F698, U+1F6AD, U+1F6B2, U+1F6B9-1F6BA, U+1F6BC, U+1F6C6-1F6CF, U+1F6D3-1F6D7, U+1F6E0-1F6EA, U+1F6F0-1F6F3, U+1F6F7-1F6FC, U+1F700-1F7FF, U+1F800-1F80B, U+1F810-1F847, U+1F850-1F859, U+1F860-1F887, U+1F890-1F8AD, U+1F8B0-1F8BB, U+1F8C0-1F8C1, U+1F900-1F90B, U+1F93B, U+1F946, U+1F984, U+1F996, U+1F9E9, U+1FA00-1FA6F, U+1FA70-1FA7C, U+1FA80-1FA89, U+1FA8F-1FAC6, U+1FACE-1FADC, U+1FADF-1FAE9, U+1FAF0-1FAF8, U+1FB00-1FBFF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4vaVIGxA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4uaVIGxA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}/* cyrillic-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4taVIGxA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4kaVIGxA.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4saVIGxA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4jaVIGxA.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* hebrew */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4iaVIGxA.woff2) format('woff2');
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+/* math */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5caVIGxA.woff2) format('woff2');
+  unicode-range: U+0302-0303, U+0305, U+0307-0308, U+0310, U+0312, U+0315, U+031A, U+0326-0327, U+032C, U+032F-0330, U+0332-0333, U+0338, U+033A, U+0346, U+034D, U+0391-03A1, U+03A3-03A9, U+03B1-03C9, U+03D1, U+03D5-03D6, U+03F0-03F1, U+03F4-03F5, U+2016-2017, U+2034-2038, U+203C, U+2040, U+2043, U+2047, U+2050, U+2057, U+205F, U+2070-2071, U+2074-208E, U+2090-209C, U+20D0-20DC, U+20E1, U+20E5-20EF, U+2100-2112, U+2114-2115, U+2117-2121, U+2123-214F, U+2190, U+2192, U+2194-21AE, U+21B0-21E5, U+21F1-21F2, U+21F4-2211, U+2213-2214, U+2216-22FF, U+2308-230B, U+2310, U+2319, U+231C-2321, U+2336-237A, U+237C, U+2395, U+239B-23B7, U+23D0, U+23DC-23E1, U+2474-2475, U+25AF, U+25B3, U+25B7, U+25BD, U+25C1, U+25CA, U+25CC, U+25FB, U+266D-266F, U+27C0-27FF, U+2900-2AFF, U+2B0E-2B11, U+2B30-2B4C, U+2BFE, U+3030, U+FF5B, U+FF5D, U+1D400-1D7FF, U+1EE00-1EEFF;
+}
+/* symbols */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5OaVIGxA.woff2) format('woff2');
+  unicode-range: U+0001-000C, U+000E-001F, U+007F-009F, U+20DD-20E0, U+20E2-20E4, U+2150-218F, U+2190, U+2192, U+2194-2199, U+21AF, U+21E6-21F0, U+21F3, U+2218-2219, U+2299, U+22C4-22C6, U+2300-243F, U+2440-244A, U+2460-24FF, U+25A0-27BF, U+2800-28FF, U+2921-2922, U+2981, U+29BF, U+29EB, U+2B00-2BFF, U+4DC0-4DFF, U+FFF9-FFFB, U+10140-1018E, U+10190-1019C, U+101A0, U+101D0-101FD, U+102E0-102FB, U+10E60-10E7E, U+1D2C0-1D2D3, U+1D2E0-1D37F, U+1F000-1F0FF, U+1F100-1F1AD, U+1F1E6-1F1FF, U+1F30D-1F30F, U+1F315, U+1F31C, U+1F31E, U+1F320-1F32C, U+1F336, U+1F378, U+1F37D, U+1F382, U+1F393-1F39F, U+1F3A7-1F3A8, U+1F3AC-1F3AF, U+1F3C2, U+1F3C4-1F3C6, U+1F3CA-1F3CE, U+1F3D4-1F3E0, U+1F3ED, U+1F3F1-1F3F3, U+1F3F5-1F3F7, U+1F408, U+1F415, U+1F41F, U+1F426, U+1F43F, U+1F441-1F442, U+1F444, U+1F446-1F449, U+1F44C-1F44E, U+1F453, U+1F46A, U+1F47D, U+1F4A3, U+1F4B0, U+1F4B3, U+1F4B9, U+1F4BB, U+1F4BF, U+1F4C8-1F4CB, U+1F4D6, U+1F4DA, U+1F4DF, U+1F4E3-1F4E6, U+1F4EA-1F4ED, U+1F4F7, U+1F4F9-1F4FB, U+1F4FD-1F4FE, U+1F503, U+1F507-1F50B, U+1F50D, U+1F512-1F513, U+1F53E-1F54A, U+1F54F-1F5FA, U+1F610, U+1F650-1F67F, U+1F687, U+1F68D, U+1F691, U+1F694, U+1F698, U+1F6AD, U+1F6B2, U+1F6B9-1F6BA, U+1F6BC, U+1F6C6-1F6CF, U+1F6D3-1F6D7, U+1F6E0-1F6EA, U+1F6F0-1F6F3, U+1F6F7-1F6FC, U+1F700-1F7FF, U+1F800-1F80B, U+1F810-1F847, U+1F850-1F859, U+1F860-1F887, U+1F890-1F8AD, U+1F8B0-1F8BB, U+1F8C0-1F8C1, U+1F900-1F90B, U+1F93B, U+1F946, U+1F984, U+1F996, U+1F9E9, U+1FA00-1FA6F, U+1FA70-1FA7C, U+1FA80-1FA89, U+1FA8F-1FAC6, U+1FACE-1FADC, U+1FADF-1FAE9, U+1FAF0-1FAF8, U+1FB00-1FBFF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4vaVIGxA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4uaVIGxA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}/* cyrillic-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4taVIGxA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4kaVIGxA.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4saVIGxA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4jaVIGxA.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* hebrew */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4iaVIGxA.woff2) format('woff2');
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+/* math */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5caVIGxA.woff2) format('woff2');
+  unicode-range: U+0302-0303, U+0305, U+0307-0308, U+0310, U+0312, U+0315, U+031A, U+0326-0327, U+032C, U+032F-0330, U+0332-0333, U+0338, U+033A, U+0346, U+034D, U+0391-03A1, U+03A3-03A9, U+03B1-03C9, U+03D1, U+03D5-03D6, U+03F0-03F1, U+03F4-03F5, U+2016-2017, U+2034-2038, U+203C, U+2040, U+2043, U+2047, U+2050, U+2057, U+205F, U+2070-2071, U+2074-208E, U+2090-209C, U+20D0-20DC, U+20E1, U+20E5-20EF, U+2100-2112, U+2114-2115, U+2117-2121, U+2123-214F, U+2190, U+2192, U+2194-21AE, U+21B0-21E5, U+21F1-21F2, U+21F4-2211, U+2213-2214, U+2216-22FF, U+2308-230B, U+2310, U+2319, U+231C-2321, U+2336-237A, U+237C, U+2395, U+239B-23B7, U+23D0, U+23DC-23E1, U+2474-2475, U+25AF, U+25B3, U+25B7, U+25BD, U+25C1, U+25CA, U+25CC, U+25FB, U+266D-266F, U+27C0-27FF, U+2900-2AFF, U+2B0E-2B11, U+2B30-2B4C, U+2BFE, U+3030, U+FF5B, U+FF5D, U+1D400-1D7FF, U+1EE00-1EEFF;
+}
+/* symbols */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B5OaVIGxA.woff2) format('woff2');
+  unicode-range: U+0001-000C, U+000E-001F, U+007F-009F, U+20DD-20E0, U+20E2-20E4, U+2150-218F, U+2190, U+2192, U+2194-2199, U+21AF, U+21E6-21F0, U+21F3, U+2218-2219, U+2299, U+22C4-22C6, U+2300-243F, U+2440-244A, U+2460-24FF, U+25A0-27BF, U+2800-28FF, U+2921-2922, U+2981, U+29BF, U+29EB, U+2B00-2BFF, U+4DC0-4DFF, U+FFF9-FFFB, U+10140-1018E, U+10190-1019C, U+101A0, U+101D0-101FD, U+102E0-102FB, U+10E60-10E7E, U+1D2C0-1D2D3, U+1D2E0-1D37F, U+1F000-1F0FF, U+1F100-1F1AD, U+1F1E6-1F1FF, U+1F30D-1F30F, U+1F315, U+1F31C, U+1F31E, U+1F320-1F32C, U+1F336, U+1F378, U+1F37D, U+1F382, U+1F393-1F39F, U+1F3A7-1F3A8, U+1F3AC-1F3AF, U+1F3C2, U+1F3C4-1F3C6, U+1F3CA-1F3CE, U+1F3D4-1F3E0, U+1F3ED, U+1F3F1-1F3F3, U+1F3F5-1F3F7, U+1F408, U+1F415, U+1F41F, U+1F426, U+1F43F, U+1F441-1F442, U+1F444, U+1F446-1F449, U+1F44C-1F44E, U+1F453, U+1F46A, U+1F47D, U+1F4A3, U+1F4B0, U+1F4B3, U+1F4B9, U+1F4BB, U+1F4BF, U+1F4C8-1F4CB, U+1F4D6, U+1F4DA, U+1F4DF, U+1F4E3-1F4E6, U+1F4EA-1F4ED, U+1F4F7, U+1F4F9-1F4FB, U+1F4FD-1F4FE, U+1F503, U+1F507-1F50B, U+1F50D, U+1F512-1F513, U+1F53E-1F54A, U+1F54F-1F5FA, U+1F610, U+1F650-1F67F, U+1F687, U+1F68D, U+1F691, U+1F694, U+1F698, U+1F6AD, U+1F6B2, U+1F6B9-1F6BA, U+1F6BC, U+1F6C6-1F6CF, U+1F6D3-1F6D7, U+1F6E0-1F6EA, U+1F6F0-1F6F3, U+1F6F7-1F6FC, U+1F700-1F7FF, U+1F800-1F80B, U+1F810-1F847, U+1F850-1F859, U+1F860-1F887, U+1F890-1F8AD, U+1F8B0-1F8BB, U+1F8C0-1F8C1, U+1F900-1F90B, U+1F93B, U+1F946, U+1F984, U+1F996, U+1F9E9, U+1FA00-1FA6F, U+1FA70-1FA7C, U+1FA80-1FA89, U+1FA8F-1FAC6, U+1FACE-1FADC, U+1FADF-1FAE9, U+1FAF0-1FAF8, U+1FB00-1FBFF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4vaVIGxA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4uaVIGxA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(https://blog.leaseweb.com/wp-content/fonts/open-sans/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}</style>	<script src="https://use.fortawesome.com/03018d9d.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
+	<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-K7V2CH9');</script>
+<!-- End Google Tag Manager -->
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-8813 single-format-standard custom-background wp-custom-logo wp-theme-leaseweb-blog">
+<div id="page" class="site">
+	<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+	<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K7V2CH9"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+	<header id="masthead" class="site-header ">
+		<nav class="top-navigation navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container align-items-start">				<div class="ml-auto"><ul id="menu-global-navigation" class="navbar-nav ml-auto"><li class='nav-item    menu-item menu-item-type-custom menu-item-object-custom'><a href="https://www.leaseweb.com" class="nav-link" target="_blank" rel="nofollow">Leaseweb.com</a></li>
+<li class='nav-item    menu-item menu-item-type-custom menu-item-object-custom'><a href="https://kb.leaseweb.com/" class="nav-link" target="_blank" rel="nofollow">Knowledge Base</a></li>
+<li class='nav-item    menu-item menu-item-type-custom menu-item-object-custom'><a href="http://developer.leaseweb.com/" class="nav-link" target="_blank" rel="nofollow">Developer API</a></li>
+<li class='nav-item    menu-item menu-item-type-custom menu-item-object-custom'><a href="https://www.leasewebstatus.com/" class="nav-link" target="_blank" rel="nofollow">Status</a></li>
+<li class='nav-item    menu-item menu-item-type-custom menu-item-object-custom'><a href="https://secure.leaseweb.com/" class="nav-link" target="_blank" rel="nofollow">Customer Portal</a></li>
+</ul></div>			</div><!-- /.container -->		</nav>
+		<nav id="site-navigation" class="main-navigation navbar navbar-expand-lg">
+			<div class="container align-items-start">				<a href="https://blog.leaseweb.com/" class="custom-logo-link" rel="home"><img width="1" height="1" src="https://blog.leaseweb.com/wp-content/uploads/2018/07/logo.svg" class="custom-logo" alt="Leaseweb Blog" decoding="async" /></a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#primary-menu-wrap" aria-controls="primary-menu-wrap" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div id="primary-menu-wrap" class="collapse navbar-collapse"><ul id="primary-menu" class="navbar-nav"><li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children'><a href="https://blog.leaseweb.com/category/iaas/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">IaaS</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children'><a href="https://blog.leaseweb.com/category/iaas/" class="nav-link">IaaS Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent'><a href="https://blog.leaseweb.com/category/iaas/dedicated-servers-2/" class="nav-link">Dedicated Servers</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/cdn/" class="nav-link">CDN</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/cloud/" class="nav-link">Cloud</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/colocation/" class="nav-link">Colocation</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/customer-portal/" class="nav-link">Customer Portal</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/datacenters/" class="nav-link">Datacenters</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/hybrid-cloud/" class="nav-link">Hybrid Cloud</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/iaas/network-2/" class="nav-link">Network</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children'><a href="https://blog.leaseweb.com/category/development/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Development</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-has-children'><a href="https://blog.leaseweb.com/category/development/" class="nav-link">Development Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/development/api/" class="nav-link">API</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/development/developer-portal/" class="nav-link">Developer Portal</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent'><a href="https://blog.leaseweb.com/category/development/devops/" class="nav-link">DevOPs</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/development/internet-of-things/" class="nav-link">Internet of Things</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/development/open-source/" class="nav-link">Open Source</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/development/tutorial/" class="nav-link">Tutorials</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/industries/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Industries</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/industries/" class="nav-link">Industries Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/e-commerce/" class="nav-link">e-commerce</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/fintech/" class="nav-link">Fintech</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/martech/" class="nav-link">MarTech & Adtech</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/media/" class="nav-link">Media</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/online-gaming/" class="nav-link">Online gaming</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/industries/saas/" class="nav-link">SaaS</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Company</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/" class="nav-link">Company Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/conventions/" class="nav-link">Conventions</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/leaseweb-festivities/" class="nav-link">Leaseweb festivities</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/leaseweb-tech-summit/" class="nav-link">Leaseweb Tech Summit</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/projects/" class="nav-link">Projects</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/life-at-leaseweb/working-at-leaseweb/" class="nav-link">Working at Leaseweb</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/customer-success/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Customers</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/customer-success/" class="nav-link">Customers Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/customer-success/customer-satisfaction-2/" class="nav-link">Customer Satisfaction</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/customer-success/client-cases/" class="nav-link">Customer Success Stories</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/customer-success/customer-support/" class="nav-link">Customer Support</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/customer-success/events/" class="nav-link">Events</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/customer-success/partner-program/" class="nav-link">Partner Program</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item  dropdown  menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/community/" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Community</a><ul class='dropdown-menu  depth_0'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category menu-item-has-children'><a href="https://blog.leaseweb.com/category/community/" class="nav-link">Community Overview</a><ul class='dropdown-menu  sub-menu depth_1'><li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/abuse-prevention/" class="nav-link">Abuse Prevention</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/community-outreach-program/" class="nav-link">Community Outreach Program</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/corporate-responsibility/" class="nav-link">Corporate Responsibility</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/guest-blogs/" class="nav-link">Guest blogs</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/sponsoring/" class="nav-link">Sponsoring</a></li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/community/transparency/" class="nav-link">Transparency</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class='nav-item    menu-item menu-item-type-taxonomy menu-item-object-category'><a href="https://blog.leaseweb.com/category/security/" class="nav-link">Security</a></li>
+</ul></div>				<div class="header-search">
+					<form role="search" method="get" class="searchform wp-bootstrap-4-searchform" action="https://blog.leaseweb.com/">
+    <input type="text" class="s form-control" name="s" placeholder="Search&hellip;" value="" >
+    <button action="submit" value=""></button>
+</form>
+		        </div>
+			</div><!-- /.container -->		</nav><!-- #site-navigation -->
+	</header><!-- #masthead -->
+
+	<div id="content" class="site-content">
+
+
+
+<header class="entry-header">
+
+	
+</header>
+
+<div class="container single">
+	<div class="row">
+		<div class="col-md-8 col-lg-7 offset-md-1 wp-bp-content-width">
+			<div id="primary" class="content-area">
+				<main id="main" class="site-main">
+					<article id="post-8813" >
+
+						<h1 class="entry-title card-title">AMD EPYC LLM Inference Benchmark: CPU Performance for 7B–20B Models and TTS Workloads</h1>
+						<div class="entry-meta">
+							<span class="posted-on">Posted on <a href="https://blog.leaseweb.com/2026/04/05/amd-epyc-llm-inference-benchmark-cpu-vs-gpu/" rel="bookmark"><time class="entry-date published" datetime="2026-04-05T13:39:29+01:00">April 5, 2026</time><time class="updated" datetime="2026-07-17T13:51:09+01:00">July 17, 2026</time></a></span><span class="byline"> by <span class="author vcard"><a class="url fn n" href="https://blog.leaseweb.com/author/f-baigorrihauenglobal-leaseweb-com/">Fran Baigorri Hauen</a></span></span>						</div><!-- .entry-meta -->
+
+						<div class="entry-content">
+							<blockquote>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>TL;DR:</strong> A dual-socket AMD EPYC 9334 delivers 20–28 tokens/sec on Q4-quantized 7B–20B LLMs and sub-real-time TTS inference (RTF 0.16 for Kokoro). Throughput is roughly half that of an NVIDIA L4 GPU, but at a fraction of the per-hour cost. For batch, async, and lightweight TTS workloads, this AMD EPYC LLM inference benchmark shows CPU is the right call.</p>
+</blockquote>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">Why Inference Costs More Than You Planned For</h3>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Training is a one-time cost. Inference is not. Once a model is in production, it runs continuously. Cost per query scales directly with traffic, and for many teams, inference spend overtakes training spend within months of launch.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">The hardware decision for inference is also different from training. Training needs large GPU clusters and high-bandwidth interconnects. Inference needs low latency, high throughput per dollar, and enough memory bandwidth to serve quantized weights efficiently. Those requirements do not always point to a GPU.</p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">How LLM Inference Works (And Why It Matters for Hardware Choice)</h3>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">When a prompt hits an LLM, processing happens in two stages.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>Prefill.</strong> The model converts input into tokens, runs them through its layers, and builds a KV cache. Because all input tokens are known upfront, this stage is parallelizable and compute-bound. It ends when the first output token is generated.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>Decode.</strong> The model generates each subsequent token one at a time, reading from the KV cache at each step. Large models have large KV caches, which makes this stage memory-bandwidth-bound.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">These two stages have different performance profiles, which is why benchmarks report two different metrics.</p>
+<h4></h4>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Key Metrics for This AMD EPYC LLM Inference Benchmark</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>Time to first token (TTFT)</strong> reflects prefill performance. Lower is better.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>Tokens per second</strong> measures decode throughput. Higher is better, particularly for batch and streaming workloads.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>Real-time factor (RTF)</strong> is the standard metric for TTS models. Below 1.0 means faster than real time. Above 1.0 means it cannot keep up.</p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">Hardware and Software Setup</h3>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">All tests ran on a single HPE ProLiant DL385 Gen11 server with two AMD EPYC 9334 processors.</p>
+<div class="overflow-x-auto w-full px-2 mb-6">
+<table class="min-w-full border-collapse text-sm leading-[1.7] whitespace-normal">
+<thead class="text-left">
+<tr>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Component</th>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">CPU</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">AMD EPYC 9334 (x2)</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Architecture</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Zen 4</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Cores / Threads per socket</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">32 / 64</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Base clock</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">2.7 GHz</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">L3 cache</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">128 MB per socket</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">TDP</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">210W per socket</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Memory</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">64 GB DDR5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Two benchmarking tools were used: <strong>llama-bench</strong> (part of llama.cpp) for local model evaluation, and <strong>OpenLLM with llmperf</strong> for API-level throughput testing.</p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">Models Tested</h3>
+<div class="overflow-x-auto w-full px-2 mb-6">
+<table class="min-w-full border-collapse text-sm leading-[1.7] whitespace-normal">
+<thead class="text-left">
+<tr>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Model</th>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Parameters</th>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">DeepSeek-R1-0528-Qwen3-8B-Q4_K_M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">8B</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">LLM</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Gpt-oss-20b</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">20B</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">LLM</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Llama-2-7b-Q4_K_M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">7B</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">LLM</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Mistral-7B-Instruct-v0.2-Q4_K_M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">7B</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">LLM</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Kokoro (ONNX Runtime)</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">82M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">TTS</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Microsoft SpeechT5</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">150M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">TTS</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Coqui XTTS-v2</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">400M</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">TTS</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Test configuration: 512-token prompt, 128 tokens generated, 24 CPU threads for LLM. 180-character input, 32 CPU threads, 30 runs per model for TTS.</p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">AMD EPYC LLM Inference Benchmark Results: TTFT and Throughput</h3>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Time to First Token (TTFT)</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">TTFT across Q4 models ranged from 3.6 seconds (GPT-OSS-20B) to 4.8 seconds (Llama-2-7B). For GPT-OSS-20B, switching to FP16 had minimal effect. For DeepSeek, the same switch pushed TTFT to 8.1 seconds.</p>
+<p><img fetchpriority="high" decoding="async" class="alignnone size-medium wp-image-8821" src="http://blog.leaseweb.com/wp-content/uploads/ttft_super_final-750x413.png" alt="" width="750" height="413" srcset="https://blog.leaseweb.com/wp-content/uploads/ttft_super_final-750x413.png 750w, https://blog.leaseweb.com/wp-content/uploads/ttft_super_final-768x422.png 768w, https://blog.leaseweb.com/wp-content/uploads/ttft_super_final.png 1000w" sizes="(max-width: 750px) 100vw, 750px" /></p>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">llama.cpp AMD EPYC Tokens Per Second: Q4 vs. FP16</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">DeepSeek drops from 27.8 tokens per second at Q4 to 8.1 at FP16. For sustained batch workloads, Q4 quantization is the practical choice on CPU.</p>
+<p><img decoding="async" class="alignnone size-medium wp-image-8820" src="http://blog.leaseweb.com/wp-content/uploads/fig_throughput_final-750x410.png" alt="" width="750" height="410" srcset="https://blog.leaseweb.com/wp-content/uploads/fig_throughput_final-750x410.png 750w, https://blog.leaseweb.com/wp-content/uploads/fig_throughput_final-768x420.png 768w, https://blog.leaseweb.com/wp-content/uploads/fig_throughput_final.png 1480w" sizes="(max-width: 750px) 100vw, 750px" /></p>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Memory and CPU Utilization</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">CPU utilization stayed between 20–30% across all runs. Q4 models leave substantial DRAM headroom for multi-tenant deployments. DeepSeek at FP16 consumed close to 16 GB, which limits concurrent instances considerably.</p>
+<p><img decoding="async" class="alignnone size-medium wp-image-8819" src="http://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-750x497.png" alt="" width="750" height="497" srcset="https://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-750x497.png 750w, https://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-1544x1024.png 1544w, https://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-768x509.png 768w, https://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-1536x1019.png 1536w, https://blog.leaseweb.com/wp-content/uploads/fig_cpu_ram_scatter-2048x1358.png 2048w" sizes="(max-width: 750px) 100vw, 750px" /></p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">CPU vs. GPU Inference: Cost Per Token Comparison</h3>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Cost per token determines the right hardware. For reference, we ran the same FP16 throughput test on an NVIDIA L4 GPU. The L4 produced 16.7 tokens/sec on DeepSeek-R1-8B and 58.6 on GPT-OSS-20B, compared to 8.1 and 26.2 on the EPYC 9334.</p>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">The GPU delivers roughly double the throughput. Bare metal EPYC servers run at a fraction of the hourly cost.</p>
+<div class="overflow-x-auto w-full px-2 mb-6">
+<table class="min-w-full border-collapse text-sm leading-[1.7] whitespace-normal">
+<thead class="text-left">
+<tr>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">Metric</th>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">AMD EPYC 9334 (dual)</th>
+<th class="text-text-100 border-b-0.5 border-border-300/60 py-2 pr-4 align-top font-bold" scope="col">NVIDIA L4 GPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">DeepSeek-R1-8B throughput (FP16)</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">8.1 tok/s</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">16.7 tok/s</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">GPT-OSS-20B throughput (FP16)</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">26.2 tok/s</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">58.6 tok/s</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Relative throughput</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">~0.45×</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">1×</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Typical hourly cost</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Lower</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">3–5× higher</td>
+</tr>
+<tr>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">Cost-per-token advantage</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">&#x2705; Batch/async</td>
+<td class="border-b-0.5 border-border-300/30 py-2 pr-4 align-top">&#x2705; Latency-critical</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">If you are deciding between GPU options for latency-critical workloads, our <a class="underline underline underline-offset-2 decoration-1 decoration-current/40 hover:decoration-current focus:decoration-current" href="https://blog.leaseweb.com/2026/04/08/bare-metal-gpu-h100-h200-l4-comparison/">bare metal GPU comparison covering H100, H200, and L4</a> walks through when each makes sense.</p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">TTS Inference on AMD EPYC: RTF Benchmarks</h3>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Kokoro (82M) — RTF 0.162</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Generates audio roughly six times faster than real time. Consistent performance between p50 and p95. The standout result in this test set.</p>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Microsoft SpeechT5 (150M) — RTF 0.6</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Memory footprint around 1.4 GB. A solid option for single-speaker synthesis with limited memory.</p>
+<h4 class="text-text-100 mt-2 -mb-1 text-base font-bold">Coqui XTTS-v2 (400M) — RTF 1.41</h4>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]">Supports voice cloning and multilingual synthesis but cannot serve real-time audio on this hardware. Best fit for batch audio generation or overnight processing jobs.</p>
+<p><img loading="lazy" decoding="async" class="alignnone size-medium wp-image-8824" src="http://blog.leaseweb.com/wp-content/uploads/rtf_p50_vs_p95-750x457.png" alt="" width="750" height="457" srcset="https://blog.leaseweb.com/wp-content/uploads/rtf_p50_vs_p95-750x457.png 750w, https://blog.leaseweb.com/wp-content/uploads/rtf_p50_vs_p95-768x467.png 768w, https://blog.leaseweb.com/wp-content/uploads/rtf_p50_vs_p95.png 1334w" sizes="auto, (max-width: 750px) 100vw, 750px" /></p>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<h3 class="text-text-100 mt-3 -mb-1 text-[1.125rem] font-bold">EPYC LLM Inference Benchmark vs GPU: How to Make the Call</h3>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>CPU inference is a good fit for:</strong></p>
+<ul class="[li_&amp;]:mb-0 [li_&amp;]:mt-1 [li_&amp;]:gap-1 [&amp;:not(:last-child)_ul]:pb-1 [&amp;:not(:last-child)_ol]:pb-1 list-disc flex flex-col gap-1 pl-8 mb-3">
+<li class="whitespace-normal break-words pl-2">Batch summarization and document processing</li>
+<li class="whitespace-normal break-words pl-2">Audio transcription queues</li>
+<li class="whitespace-normal break-words pl-2">Overnight report generation</li>
+<li class="whitespace-normal break-words pl-2">Edge deployments where GPU cost is a constraint</li>
+<li class="whitespace-normal break-words pl-2">Lightweight TTS workloads that do not require real-time synthesis</li>
+</ul>
+<p class="font-claude-response-body break-words whitespace-normal leading-[1.7]"><strong>GPU inference is still the right call for:</strong></p>
+<ul class="[li_&amp;]:mb-0 [li_&amp;]:mt-1 [li_&amp;]:gap-1 [&amp;:not(:last-child)_ul]:pb-1 [&amp;:not(:last-child)_ol]:pb-1 list-disc flex flex-col gap-1 pl-8 mb-3">
+<li class="whitespace-normal break-words pl-2">Real-time, latency-critical workloads at scale</li>
+<li class="whitespace-normal break-words pl-2">High-concurrency serving where throughput is the ceiling</li>
+<li class="whitespace-normal break-words pl-2">Models above 20B parameters without quantization</li>
+</ul>
+<hr class="border-border-200 border-t-0.5 my-3 mx-1.5" />
+<p>Running batch inference or TTS workloads? See our bare metal dedicated server configurations and pricing.</p>
+<div class="" style="text-align: center; margin-bottom: 24px;"><a class="btn btn-primary" href="https://www.leaseweb.com/en/products-services/dedicated-servers/" target="_blank" rel="nofollow">See bare metal server configurations</a></div>
+						</div><!-- .entry-content -->
+
+													<footer class="entry-footer card-footer text-muted">
+								
+			<span class="tags-links">
+							</span>
+
+									</footer><!-- .entry-footer -->
+						
+					</article><!-- #post-8813 -->
+				</main><!-- #main -->
+			</div><!-- #primary -->
+		</div>
+
+									<div class="col-md-1 offset-md-2 wp-bp-sidebar-width">
+								
+<aside id="secondary" class="widget-area sidebar-1-area">
+	<section id="a2a_share_save_widget-2" class="widget widget_a2a_share_save_widget"><h5 class="widget-title h6">Share</h5><div class="a2a_kit a2a_kit_size_32 addtoany_list"><a class="a2a_button_facebook" href="https://www.addtoany.com/add_to/facebook?linkurl=https%3A%2F%2Fblog.leaseweb.com%2F2026%2F04%2F05%2Famd-epyc-llm-inference-benchmark-cpu-vs-gpu%2F&amp;linkname=EPYC%20LLM%20Inference%20Benchmark%3A%20CPU%20vs%20GPU%20Cost%20Per%20Token" title="Facebook" rel="nofollow noopener" target="_blank"></a><a class="a2a_button_twitter" href="https://www.addtoany.com/add_to/twitter?linkurl=https%3A%2F%2Fblog.leaseweb.com%2F2026%2F04%2F05%2Famd-epyc-llm-inference-benchmark-cpu-vs-gpu%2F&amp;linkname=EPYC%20LLM%20Inference%20Benchmark%3A%20CPU%20vs%20GPU%20Cost%20Per%20Token" title="Twitter" rel="nofollow noopener" target="_blank"></a><a class="a2a_button_linkedin" href="https://www.addtoany.com/add_to/linkedin?linkurl=https%3A%2F%2Fblog.leaseweb.com%2F2026%2F04%2F05%2Famd-epyc-llm-inference-benchmark-cpu-vs-gpu%2F&amp;linkname=EPYC%20LLM%20Inference%20Benchmark%3A%20CPU%20vs%20GPU%20Cost%20Per%20Token" title="LinkedIn" rel="nofollow noopener" target="_blank"></a></div></section><section id="text-4" class="widget widget_text">			<div class="textwidget"><div class="mt-5">
+<div class="rpbt_shortcode">
+<h3>More like this</h3>
+<ul>
+					
+			<li>
+				<a href="https://blog.leaseweb.com/2019/06/07/the-power-of-bare-metal/">The power of bare metal</a>
+			</li>
+					
+			<li>
+				<a href="https://blog.leaseweb.com/2026/02/05/leaseweb-dedicated-server-remote-management/">Leaseweb Dedicated Server Remote Management</a>
+			</li>
+					
+			<li>
+				<a href="https://blog.leaseweb.com/2026/01/22/build-your-own-virtualized-server-cluster/">Build your own virtualized server cluster using Leaseweb Dedicated Servers (in shared racks)</a>
+			</li>
+					
+			<li>
+				<a href="https://blog.leaseweb.com/2023/05/02/the-importance-of-patching-on-time/">The Importance of Patching On Time</a>
+			</li>
+					
+			<li>
+				<a href="https://blog.leaseweb.com/2023/03/21/leaseweb-launches-ultra-high-bandwidth-servers/">Leaseweb Launches Ultra-High Bandwidth Servers</a>
+			</li>
+			</ul>
+</div></div>
+</div>
+		</section></aside><!-- #secondary -->
+				</div>
+				<!-- /.col-md-4 -->
+			</div>
+	<!-- /.row -->
+</div>
+<!-- /.container -->
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8 col-lg-7 offset-md-1 wp-bp-content-width">
+				
+	<nav class="navigation post-navigation" aria-label="Posts">
+		<h2 class="screen-reader-text">Post navigation</h2>
+		<div class="nav-links"><div class="nav-previous"><a href="https://blog.leaseweb.com/2026/03/25/european-digital-sovereignty-is-a-system-challenge/" rel="prev">&laquo; European Digital Sovereignty Is a System Challenge, Not Just a Technology One</a></div><div class="nav-next"><a href="https://blog.leaseweb.com/2026/04/08/bare-metal-gpu-h100-h200-l4-comparison/" rel="next">NVIDIA H100 vs H200 vs L4: which bare metal GPU fits your AI workload?</a></div></div>
+	</nav>
+<div id="comments" class="comments-area">
+
+	
+			<div class="wb-comment-form">
+				<div id="respond" class="comment-respond">
+		<h5 class="reply-title">Leave a Reply</h5><form action="https://blog.leaseweb.com/wp-comments-post.php" method="post" id="commentform" class="comment-form row align-items-center"><div class="col-sm-12 text-muted wb-comment-notes"><p>Your email address will not be published. Required fields are marked *</p></div><div class="comment-form-textarea form-group col-md-12"><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true" class="form-control" placeholder="Enter your comment...*"></textarea></div><div class="comment-form-author form-group col-md-4"><input id="author" placeholder="Name *" name="author" type="text" value="" size="30" class="form-control" required /></div>
+<p class="comment-form-email form-group col-md-4"><input id="email" placeholder="Email *" name="email" type="email" value="" size="30" class="form-control" required /></p>
+<p class="comment-form-url form-group col-md-4"><input id="url" placeholder="Website" name="url" type="url" value="" size="30" class="form-control" /></p>
+<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" /> <label for="wp-comment-cookies-consent">Save my name, email, and website in this browser for the next time I comment.</label></p>
+<div class="form-submit col-sm-12"><input name="submit" type="submit" id="submit" class="submit btn btn-primary comment-submit-btn" value="Post Comment" /> <input type='hidden' name='comment_post_ID' value='8813' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</div><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="7b1a9b1a5b" /></p><p style="display: none !important;" class="akismet-fields-container" data-prefix="ak_"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js_1" name="ak_js" value="208"/><script type="text/javascript">
+/* <![CDATA[ */
+document.getElementById( "ak_js_1" ).setAttribute( "value", ( new Date() ).getTime() );
+/* ]]> */
+</script>
+</p></form>	</div><!-- #respond -->
+			</div>
+	
+</div><!-- #comments -->
+			</div>
+		</div>
+	</div>
+
+
+
+	</div><!-- #content -->
+
+	<footer id="colophon" class="site-footer mt-5">
+
+		<section class="footer-widgets text-left">
+			<div class="container">
+				<div class="row">
+											<div class="col-md">
+							<aside class="widget-area footer-1-area mb-2">
+								<section id="text-3" class="widget wp-bp-footer-widget widget_text"><h5 class="widget-title h6">About Leaseweb</h5>			<div class="textwidget"><p>Leaseweb is a global Infrastructure as a Service (IaaS) cloud provider serving a worldwide portfolio of 17,500 customers ranging from SMBs to enterprises. Services include Public Cloud, Private Cloud, CDN (Content Delivery Network), Bare Metal Servers, Managed Hosting, Colocation, and Hybrid Solutions, with 24/7 support.</p>
+<p><a href="https://www.leaseweb.com/about" rel="nofollow">Learn More</a></p>
+</div>
+		</section>							</aside>
+						</div>
+					
+											<div class="col-md">
+							<aside class="widget-area footer-2-area mb-2">
+								<section id="nav_menu-3" class="widget wp-bp-footer-widget widget_nav_menu"><h5 class="widget-title h6">For Industries</h5><div class="menu-industries-container"><ul id="menu-industries" class="menu"><li id="menu-item-5921" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5921"><a href="https://www.leaseweb.com/solutions/martech" target="_blank" rel="nofollow">MarTech &#038; AdTech</a></li>
+<li id="menu-item-5922" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5922"><a href="https://www.leaseweb.com/solutions/saas" target="_blank" rel="nofollow">SaaS</a></li>
+<li id="menu-item-5923" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5923"><a href="https://www.leaseweb.com/solutions/gaming" target="_blank" rel="nofollow">Gaming</a></li>
+<li id="menu-item-5924" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-5924"><a href="https://www.leaseweb.com/solutions/e-commerce" target="_blank" rel="nofollow">E-commerce</a></li>
+</ul></div></section><section id="nav_menu-4" class="widget wp-bp-footer-widget widget_nav_menu"><h5 class="widget-title h6">For products</h5><div class="menu-products-container"><ul id="menu-products" class="menu"><li id="menu-item-6034" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6034"><a href="https://www.leaseweb.com/dedicated-servers" target="_blank" rel="nofollow">Dedicated Servers</a></li>
+<li id="menu-item-6035" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6035"><a href="https://www.leaseweb.com/cloud" target="_blank" rel="nofollow">Cloud</a></li>
+<li id="menu-item-6036" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6036"><a href="https://www.leaseweb.com/cdn" target="_blank" rel="nofollow">CDN</a></li>
+<li id="menu-item-6037" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6037"><a href="https://www.leaseweb.com/cybersecurity-services" target="_blank" rel="nofollow">Cybersecurity</a></li>
+<li id="menu-item-6038" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6038"><a href="https://www.leaseweb.com/web-hosting" target="_blank" rel="nofollow">Web Hosting</a></li>
+<li id="menu-item-6039" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-6039"><a href="https://www.leaseweb.com/domain" target="_blank" rel="nofollow">Domain Names</a></li>
+</ul></div></section>							</aside>
+						</div>
+					
+					
+											<div class="col-md">
+							<aside class="widget-area footer-4-area mb-2">
+								<section id="custom_html-3" class="widget_text widget wp-bp-footer-widget widget_custom_html"><h5 class="widget-title h6">Sign up for our newsletter</h5><div class="textwidget custom-html-widget"><p class="mt-3">Stay up to date with the latest news about Leaseweb solutions, events, special offers and more by subscribing to our monthly newsletter!</p>
+
+<script charset="utf-8" type="text/javascript" src="//js-eu1.hsforms.net/forms/embed/v2.js"></script>
+<script>
+  hbspt.forms.create({
+    region: "eu1",
+    portalId: "27248975",
+    formId: "6e0bb744-5c5c-4b3b-85cf-1147c9185965"
+  });
+</script></div></section><section id="custom_html-4" class="widget_text widget wp-bp-footer-widget widget_custom_html"><h5 class="widget-title h6">Visit/Follow us</h5><div class="textwidget custom-html-widget"><div class="bottom-social">
+                       <a href="http://www.facebook.com/leaseweb" title="Facebook" class="social-icon-link"><i class="fa fa-facebook-official" aria-hidden="true"></i></a><a href="http://www.twitter.com/leaseweb" title="Twitter" class="social-icon-link"><i class="fa fa-twitter" aria-hidden="true"></i></a><a href="http://www.linkedin.com/company/242620" title="LinkedIn" class="social-icon-link"><i class="fa fa-linkedin" aria-hidden="true"></i></a><a href="https://www.youtube.com/user/LeaseWeb" title="YouTube" class="social-icon-link"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+	</div></div></section>							</aside>
+						</div>
+									</div>
+				<!-- /.row -->
+			</div>
+		</section>
+
+		<div class="container">
+			<div class="site-info">
+
+			</div><!-- .site-info -->
+		</div>
+		<!-- /.container -->
+	</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/leaseweb-blog/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id='kirki-viewport-lists'>var kirkiViewports = {"md":{"value":1200,"scale":1,"minWidth":1200,"maxWidth":1200,"title":"Desktop","icon":"desktop","activeIcon":"desktop-hover","id":"md","type":"max"},"tablet":{"value":991,"scale":1,"minWidth":991,"maxWidth":991,"title":"Tablet","icon":"tablet-default","activeIcon":"tablet-hover","type":"max","id":"tablet"},"mobileLandscape":{"value":767,"scale":1,"minWidth":767,"maxWidth":767,"title":"Landscape","icon":"phone-hr-default","activeIcon":"phone-hr-hover","type":"max","id":"mobileLandscape"},"mobile":{"value":575,"scale":1,"minWidth":575,"maxWidth":575,"title":"Mobile","icon":"phone-vr-default","activeIcon":"phone-vr-hover","type":"max","id":"mobile"}};</script><script id='kirki-variable-lists'>var kirkiCSSVariable = {"data":[{"title":"Colors","key":"color","modes":[{"title":"Default","key":"default"}],"variables":[]},{"title":"Numbers","key":"size","modes":[{"title":"Default","key":"default"}],"variables":[]},{"title":"Text Styles","key":"text-style","modes":[{"title":"Default","key":"default"}],"variables":[]},{"title":"Font Family","key":"font-family","modes":[{"title":"Default","key":"default"}],"variables":[]}]};</script><script id="kirki-api-and-nonce">
+    window.wp_kirki = {
+        ajaxUrl: "https://blog.leaseweb.com/wp-admin/admin-ajax.php",
+        restUrl: "https://blog.leaseweb.com/wp-json/",
+        siteUrl: "https://blog.leaseweb.com",
+        apiVersion: "v1",
+        postId: "8813",
+        nonce: "421302aa5b",
+        call_from: "",
+        templateId: "",
+        context: {"id":8813,"type":"post"}
+    };
+    </script><script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/metronet-profile-picture/js/mpp-frontend.js?ver=2.6.4" id="mpp_gutenberg_tabs-js"></script>
+<script type="text/javascript" id="leadin-script-loader-js-js-extra">
+/* <![CDATA[ */
+var leadin_wordpress = {"userRole":"visitor","pageType":"post","leadinPluginVersion":"11.3.65"};
+//# sourceURL=leadin-script-loader-js-js-extra
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://js-eu1.hs-scripts.com/27248975.js?integration=WordPress&amp;ver=11.3.65" id="leadin-script-loader-js-js"></script>
+<script type="text/javascript" id="qppr_frontend_scripts-js-extra">
+/* <![CDATA[ */
+var qpprFrontData = {"linkData":{"https://blog.leaseweb.com/contact-2/":[0,0,""],"https://blog.leaseweb.com/about-us/":[0,0,""]},"siteURL":"https://blog.leaseweb.com","siteURLq":"https://blog.leaseweb.com"};
+//# sourceURL=qppr_frontend_scripts-js-extra
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/quick-pagepost-redirect-plugin/js/qppr_frontend_script.min.js?ver=5.2.3" id="qppr_frontend_scripts-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/wp-syntax/js/wp-syntax.js?ver=1.2" id="wp-syntax-js-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/themes/leaseweb-blog/assets/js/bootstrap.js?ver=v4.0.0" id="bootstrap-4-js-js"></script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/mystickysidebar/js/detectmobilebrowser.js?ver=1.2.3" id="detectmobilebrowser-js"></script>
+<script type="text/javascript" id="mystickysidebar-js-extra">
+/* <![CDATA[ */
+var mystickyside_name = {"mystickyside_string":"#secondary","mystickyside_content_string":".container.single","mystickyside_margin_top_string":"20","mystickyside_margin_bot_string":"0","mystickyside_update_sidebar_height_string":"false","mystickyside_min_width_string":"767","device_desktop":"1","device_mobile":"1"};
+//# sourceURL=mystickysidebar-js-extra
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/mystickysidebar/js/theia-sticky-sidebar.js?ver=1.2.3" id="mystickysidebar-js"></script>
+<script defer type="text/javascript" src="https://blog.leaseweb.com/wp-content/plugins/akismet/_inc/akismet-frontend.js?ver=1777105263" id="akismet-frontend-js"></script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s.w.org/images/core/emoji/17.0.2/72x72/","ext":".png","svgUrl":"https://s.w.org/images/core/emoji/17.0.2/svg/","svgExt":".svg","source":{"concatemoji":"https://blog.leaseweb.com/wp-includes/js/wp-emoji-release.min.js?ver=1f3407d6b21fcd85a80f7022a3ab7163"}}
+</script>
+<script type="module">
+/* <![CDATA[ */
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=https://blog.leaseweb.com/wp-includes/js/wp-emoji-loader.min.js
+/* ]]> */
+</script>
+
+</body>
+</html>

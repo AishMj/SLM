@@ -1,0 +1,15 @@
+download run finished
+downloaded: 86
+skipped (already had): 0
+failed: 2
+
+these ones did not come down, get them by hand:
+
+  llama33_license.html
+    https://www.llama.com/llama3_3/license/
+    reason: gave up after 3 tries
+
+  llama2_license.html
+    https://ai.meta.com/llama/license/
+    reason: gave up after 3 tries
+
