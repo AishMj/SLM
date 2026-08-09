@@ -284,26 +284,30 @@ M = [
    ctry_s="BigCode OpenRAIL-M v1 Attachment A lists prohibited uses; Section 'Distribution and "
           "Redistribution' requires the restrictions to flow down.  ||  Origin: arxiv 2402.19173 author list.",
    pb=16.0, p="16.0B dense (marketed as 15B)",
-   p_s="huggingface.co/bigcode/starcoder2-15b - config.json. NOTE the marketing name understates the "
-       "actual parameter count; this sits at the top of the SLM range.",
-   train="1024 x NVIDIA H100, 4+ trillion tokens",
+   p_s="VERIFIED 2026-08-10 from arxiv 2402.19173 PDF TABLE 6 (Model architecture details): "
+       "hidden_dim 6144, n_heads 48, n_kv_heads 4 (GQA), n_layers 40, vocab 49152, RoPE. "
+       "head_dim = 6144/48 = 128, which is the geometry used for the KV-cache calculation in this sheet. "
+       "NOTE the marketing name understates the actual parameter count; this sits at the top of the SLM range.",
+   train="1024 x NVIDIA H100; 4.1T tokens, 1M iterations, batch 4.1M (15B)",
    train_s="VERIFIED 2026-08-10 against huggingface.co/bigcode/starcoder2-15b model card: 1024 x H100, "
            "4+ trillion training tokens.  ||  CORRECTION: an earlier revision said A100-80GB. That was WRONG - "
            "StarCoder2 was trained on H100s.",
    ly=40, kvh=4, hd=128, ctx="16,384",
-   ctx_s="huggingface.co/bigcode/starcoder2-15b - config.json max_position_embeddings = 16384; "
-         "sliding-window attention of 4096 also configured. CHECK the interaction between the two.",
+   ctx_s="VERIFIED 2026-08-10 from arxiv 2402.19173 PDF Section 6.3 and TABLE 8: base models trained at "
+         "sequence length 4,096, then long-context pre-trained on 200B further tokens at 16,384 context "
+         "with a 4,096 sliding window and FlashAttention-2. Model card confirms 16,384. "
+         "The 4,096 sliding window is the practical attention span - relevant when reasoning about a 6-8K prompt.",
    prim="Code generation and Fill-in-the-Middle (base model, NOT instruction tuned)",
    prim_s="arxiv 2402.19173 - StarCoder2 is released as a base model. The card explicitly notes it is "
           "not an instruction-following model.",
-   sec="Code completion across 600+ programming languages; repository-level context",
-   sec_s="arxiv 2402.19173 - The Stack v2 covers 600+ languages; paper describes repo-level training context.",
-   bench="HumanEval 46.3% | HumanEval+ 37.8% | CruxEval-I 48.1% | DS-1000 33.8% | GSM8K-PAL 65.1% | RepoBench-v1.1 74.08% | MultiPL-E C++ 41.4% (UNVERIFIED)",
-   bench_s="VERIFIED 2026-08-10 against huggingface.co/bigcode/starcoder2-15b model card.  ||  CORRECTION: HumanEval is 46.3%, not 46.4% as previously stated.  ||  STILL UNVERIFIED: the MultiPL-E C++ 41.4% figure is NOT on the model card and could not be extracted from the arXiv HTML - it needs a manual read of the 2402.19173 PDF, Section 7.1.2 (MultiPL-E). Treat 41.4 as unconfirmed.  ||  RepoBench 74.08% is repository-level edit similarity - the most relevant published number here for retry-patching behaviour.",
+   sec="Repository-level code completion; code editing (CanItEdit). FIM supported but MEASURABLY BROKEN (see source)",
+   sec_s="VERIFIED 2026-08-10 by direct read of the arxiv 2402.19173 PDF.  ||  Repo-level completion: TABLE 17 (RepoBench v1.1) and Section 7.6. Code editing: TABLE 13 (CanItEdit).  ||  TWO PAPER-DOCUMENTED WEAKNESSES THAT MATTER FOR ipoefgfefs AND ARE NOT VISIBLE IN ANY HEADLINE SCORE:  ||  (1) FIM IS BROKEN. TABLE 16 caption, verbatim: 'Due to an implementation bug, FIM was incorrect for most of the training of StarCoder2-15B.' Section 7.5 text: 'StarCoder2-15B underperforms on FIM.' Measured FIM is Python 48.4 / Java 60.5 / JS 54.7 against StarCoderBase-15B at 62 / 73 / 74. Listing FIM as a STRENGTH of this model would be wrong - it is a regression.  ||  (2) C++ SPECIFICALLY IS WEAK. Section 7.2.1, paraphrased from the paper: StarCoder2-15B underperforms on C++ because roughly ONE THIRD of the C++ it generates is incomplete - the paper's example is an unexpected break immediately after the beginning of a for loop. That is exactly the failure mode a 5-gate cross-compile pipeline would hit on every run.",
+   bench="MultiPL-E C++ 41.4% | HumanEval 46.3% | HumanEval+ 37.8% | MBPP 66.2% | MBPP+ 53.1% | CanItEdit descriptive 43.08% / lazy 38.45% | RepoBench-v1.1 ES 74.08% | CRUXEval-I 48.1% / O 47.1% | GSM8K-PAL 65.1% | FIM Python 48.4% (SEE SOURCE - BUGGED)",
+   bench_s="FULLY VERIFIED 2026-08-10 by direct read of the arxiv 2402.19173 PDF.  ||  MultiPL-E C++ 41.4% = TABLE 10 (Pass@1 on MultiPL-E, 50 samples per problem, temperature 0.2, top-p 0.95). For context in the same table: CodeLlama-13B C++ 37.4, DeepSeekCoder-33B C++ 51.2, StarCoder2-7B C++ 33.6.  ||  HumanEval 46.3 / HumanEval+ 37.8 / MBPP 66.2 / MBPP+ 53.1 = TABLE 9 (greedy decoding, EvalPlus framework).  ||  CanItEdit code-EDITING 43.08 descriptive / 38.45 lazy = TABLE 13 - the most relevant published benchmark in this sheet for a compile-retry loop, since it measures editing existing code rather than writing it fresh.  ||  RepoBench-v1.1 Python edit-similarity 74.08 = TABLE 17.  ||  CRUXEval-I 48.1 / CRUXEval-O 47.1 = TABLE 15.  ||  GSM8K-PAL 65.1 = TABLE 14.  ||  FIM Python 48.4 / Java 60.5 / JavaScript 54.7 = TABLE 16. CRITICAL: these FIM scores are LOWER than StarCoder2-15B's own predecessor StarCoderBase-15B (62 / 73 / 74) and far below CodeLlama-13B (74.5 / 80 / 85). The Table 16 caption states verbatim: 'Due to an implementation bug, FIM was incorrect for most of the training of StarCoder2-15B.' Full detail in the Secondary Purpose - SOURCE cell.",
    eng="llama.cpp, vLLM, TGI, Ollama",
    eng_s="llama.cpp: GGUF community builds.  ||  vLLM: docs.vllm.ai (Starcoder2ForCausalLM).  ||  "
          "TGI: natively supported, BigCode and HF are the same ecosystem.",
-   vstat="MOSTLY VERIFIED 2026-08-10. HumanEval corrected to 46.3, training HW corrected to H100. MultiPL-E C++ 41.4 REMAINS UNVERIFIED - needs manual PDF read.",
+   vstat="FULLY VERIFIED 2026-08-10 by direct PDF read; every figure cited to a table number. C++ 41.4 CONFIRMED (Table 10). NEW FINDINGS: FIM is BUGGED (Table 16 caption) and C++ output is 1/3 incomplete (Sec 7.2.1). Both argue against this model for ipoefgfefs.",
  ),
  dict(
    n="CodeGemma 7B IT", n_s="huggingface.co/google/codegemma-7b-it - model card title",
@@ -417,8 +421,8 @@ M = [
    prim_s="arxiv 2310.06825 - general-purpose model, NOT code specialised.",
    sec="Function calling (added in v0.3); multilingual",
    sec_s="Model card release notes for v0.3 list extended vocabulary and function-calling support.",
-   bench="MMLU 62.5% | HumanEval 36.5% (leaderboard only, NOT in the paper)",
-   bench_s="VERIFIED 2026-08-10: huggingface.co/mistralai/Mistral-7B-Instruct-v0.3 publishes NO benchmark scores AT ALL. The card covers installation, usage and function calling only.  ||  MMLU 62.5% comes from arxiv 2310.06825 (the v0.1 paper), NOT from the v0.3 card - be careful, these are different model versions.  ||  HumanEval 36.5% is from evalplus.github.io/leaderboard.html, a third-party leaderboard. NO PRIMARY SOURCE EXISTS. This is the weakest-evidenced model in the sheet.",
+   bench="NO PRIMARY BENCHMARKS EXIST FOR v0.3. MMLU 62.5% is a v0.1 figure; HumanEval 36.5% is leaderboard-only. SEE SOURCE.",
+   bench_s="VERIFIED 2026-08-10, AND THE FINDING IS THAT NO SOLID REFERENCE EXISTS.  ||  (1) huggingface.co/mistralai/Mistral-7B-Instruct-v0.3 publishes NO benchmark scores at all - the card covers installation, usage and function calling only.  ||  (2) MMLU 62.5% comes from arxiv 2310.06825, which is the v0.1 BASE model paper. It is a DIFFERENT MODEL VERSION and should not be presented as a v0.3 Instruct figure. Secondary sources put v0.3 nearer 59.9-60.0%, but those are not primary either.  ||  (3) HumanEval 36.5% is from evalplus.github.io/leaderboard.html, a third-party leaderboard whose table is JavaScript-rendered and could not be captured for citation.  ||  CONCLUSION: this is the only model in the sheet with NO citable primary benchmark. It is retained for completeness but must not be ranked on these numbers. It is not a contender for the C++ role in any case.",
    eng="llama.cpp, vLLM, SGLang, Ollama, TGI, MLX, ONNX Runtime",
    eng_s="vLLM: docs.vllm.ai (MistralForCausalLM).  ||  llama.cpp: GGUF widely published.  ||  "
          "Ollama: ollama.com/library/mistral.",
@@ -613,13 +617,13 @@ M = [
    prim_s="arxiv 2310.03744 title: 'Improved Baselines with Visual Instruction Tuning'.",
    sec="Visual question answering; OCR (weaker than Qwen2-VL)",
    sec_s="Paper evaluation covers VQA benchmarks; TextVQA 67.1% is materially below Qwen2-VL.",
-   bench="MMBench 70.0% | TextVQA 67.1% | MMMU 35.9%",
-   bench_s="PARTIALLY VERIFIED 2026-08-10: huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf publishes NO benchmark scores at all. The quoted figures come from arxiv 2310.03744 (which covers LLaVA-1.5) and the llava-vl.github.io blog (which covers 1.6/NeXT).  ||  UNRESOLVED: 1.5 and 1.6 numbers are routinely conflated in secondary sources and this sheet cannot currently prove which release each figure belongs to. Treat all LLaVA benchmark figures here as unconfirmed.",
+   bench="VQAv2 82.8% | ScienceQA 73.6% | TextVQA 67.1% | GQA 65.4% | VisWiz 60.5% | MMMU val 36.2%",
+   bench_s="VERIFIED 2026-08-10 against llava-vl.github.io/blog/2024-01-30-llava-next/ - the official LLaVA-NeXT release blog. Figures are for LLaVA-NeXT-Vicuna-13B at 672x672 resolution.  ||  CORRECTION: MMMU is 36.2% (val), not 35.9% as previously stated - 35.9 is the LLaVA-1.5 figure from arxiv 2310.03744. This is exactly the 1.5-vs-1.6 conflation the previous revision warned about, and this sheet had fallen into it.  ||  MMBench 70.0% has been REMOVED - it does not appear in the NeXT blog tables for the 13B and could not be sourced.  ||  DocVQA is NOT published for this variant.  ||  NOTE: the HuggingFace card llava-hf/llava-v1.6-vicuna-13b-hf publishes no benchmarks at all; the release blog is the primary source.",
    eng="llama.cpp, vLLM, SGLang, transformers",
    eng_s="llama.cpp: LLaVA has the most mature vision support in llama.cpp of any model here "
          "(clip.cpp / llava.cpp).  ||  vLLM: docs.vllm.ai multimodal list.  ||  "
          "SGLang: docs.sglang.ai - LLaVA is a documented example.",
-   vstat="LICENCE CONFIRMED AS LLAMA 2 (not Apache 2.0) 2026-08-10. Benchmarks UNCONFIRMED - card publishes none, and 1.5 vs 1.6 figures are conflated in secondary sources. Context 4K disqualifies it regardless.",
+   vstat="VERIFIED 2026-08-10. Licence confirmed LLAMA 2. Benchmarks now sourced to the official LLaVA-NeXT blog; MMMU corrected 35.9 (a 1.5 figure) -> 36.2, MMBench 70.0 removed as unsourceable. Context 4K disqualifies it regardless.",
  ),
  dict(
    n="PaliGemma 3B mix-448", n_s="huggingface.co/google/paligemma-3b-mix-448 - model card title",
@@ -1070,7 +1074,52 @@ for t_ in [
  "    though the model is not a contender so the stakes are low.",
  "  - LLaVA-1.6: all benchmark figures unconfirmed, per correction 14.",
  "",
- "  Every other cell across all 19 models has now been checked against a primary source."
+ "  Every other cell across all 19 models has now been checked against a primary source.",
+ "",
+ "PASS 3 - THE THREE RESIDUAL CELLS, RESOLVED 2026-08-10 BY DIRECT PDF READ.",
+ "",
+ "  17. StarCoder2 MultiPL-E C++ 41.4%: NOW CONFIRMED. arxiv 2402.19173 TABLE 10, Pass@1 on MultiPL-E,",
+ "      50 samples per problem, temperature 0.2, top-p 0.95. The figure this sheet carried was correct;",
+ "      it simply had no citation. It now cites the table. Same read also confirmed HumanEval 46.3 and",
+ "      added MBPP 66.2 / MBPP+ 53.1 (Table 9), CanItEdit 43.08/38.45 (Table 13), CRUXEval-I 48.1 and",
+ "      CRUXEval-O 47.1 (Table 15), GSM8K-PAL 65.1 (Table 14), RepoBench ES 74.08 (Table 17), and the",
+ "      full architecture from Table 6 (40 layers, 4 KV heads, hidden 6144 so head_dim 128) which is the",
+ "      geometry this sheet uses for its KV-cache maths.",
+ "",
+ "  18. TWO STARCODER2 WEAKNESSES FOUND IN THE PAPER THAT NO HEADLINE SCORE SHOWS. These were missed by",
+ "      every earlier pass because they live in a table caption and a discussion paragraph, not in a",
+ "      results row:",
+ "        a) FIM IS BROKEN. Table 16 caption, verbatim: 'Due to an implementation bug, FIM was incorrect",
+ "           for most of the training of StarCoder2-15B.' Measured FIM is Python 48.4 / Java 60.5 /",
+ "           JS 54.7 - WORSE than its own predecessor StarCoderBase-15B at 62 / 73 / 74. This sheet",
+ "           previously listed 'FIM: YES (native)' as a STRENGTH. That was misleading and is corrected.",
+ "        b) C++ OUTPUT IS ONE-THIRD INCOMPLETE. Section 7.2.1 reports that StarCoder2-15B underperforms",
+ "           on C++ because about a third of generated C++ is incomplete - the paper's own example is an",
+ "           unexpected break straight after the start of a for loop. For a 5-gate cross-compile pipeline",
+ "           that is the worst possible failure mode.",
+ "      TAKEN TOGETHER these remove StarCoder2 from serious consideration for ipoefgfefs, on the paper's",
+ "      own evidence rather than on a benchmark ranking.",
+ "",
+ "  19. LLaVA-1.6 13B benchmarks: NOW SOURCED to llava-vl.github.io/blog/2024-01-30-llava-next (the",
+ "      official release blog, since the HuggingFace card publishes none). VQAv2 82.8, ScienceQA 73.6,",
+ "      TextVQA 67.1, GQA 65.4, VisWiz 60.5, MMMU val 36.2, at 672x672 resolution.",
+ "      CORRECTION: MMMU 35.9 was a LLaVA-1.5 figure from arxiv 2310.03744 - the exact 1.5-vs-1.6",
+ "      conflation the previous revision warned about, which this sheet had itself fallen into.",
+ "      MMBench 70.0 has been REMOVED: it is not in the NeXT blog tables for the 13B and could not be",
+ "      sourced anywhere primary.",
+ "",
+ "  20. Mistral 7B Instruct v0.3: RESOLVED, and the resolution is that NO SOLID REFERENCE EXISTS.",
+ "      The v0.3 model card publishes no benchmarks at all. The MMLU 62.5% figure comes from arxiv",
+ "      2310.06825, which is the v0.1 BASE model paper - a different model version. Secondary sources",
+ "      place v0.3 nearer 59.9-60.0% but are not primary. HumanEval 36.5% is from the EvalPlus",
+ "      leaderboard, whose table is JavaScript-rendered and could not be captured for citation.",
+ "      This is now the ONLY model in the sheet with no citable primary benchmark, and it is labelled",
+ "      as such in its own cells. It is not a contender for the C++ role, so the stakes are low - but",
+ "      it must not be ranked on those numbers.",
+ "",
+ "STATUS AFTER THREE PASSES: every benchmark figure in this sheet is now traceable to a named primary",
+ "source, and where a table number exists it is cited. The single exception is Mistral 7B v0.3, where",
+ "the absence of a source IS the finding and is stated in the cell rather than papered over."
 ]:
     r = line(r, t_)
 
