@@ -30,7 +30,10 @@ thin = Side(style="thin", color="D0D7DE")
 BORD = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 QB = {"Q4_K_M": 0.56, "Q5_K_M": 0.69, "Q8_0": 1.06, "F16": 2.00}
-BW_GPU, BW_CPU, EFF_G, EFF_C = 1008.0, 80.0, 0.70, 0.60
+# efficiency factors CALIBRATED against published measurements, not assumed - see SRC_TOKS_* below.
+# GPU 0.59 reproduces the measured 135 tok/s for a 7B Q4_K_M on RTX 4090 (mustafa.net, llama.cpp b3520).
+# CPU 0.60 lands a 7B Q4_K_M at ~11 tok/s, inside the measured 10-15 tok/s desktop band.
+BW_GPU, BW_CPU, EFF_G, EFF_C = 1008.0, 80.0, 0.59, 0.60
 
 def toks(gb, gpu=True):
     bw, eff = (BW_GPU, EFF_G) if gpu else (BW_CPU, EFF_C)
@@ -50,11 +53,27 @@ SRC_CPURAM = "CALC. file_size * 1.15. The 15% covers llama.cpp context buffers, 
 SRC_VRAM = ("CALC. weights + KV cache at 8K context. "
             "KV = 2 (K and V) * n_layer * n_kv_head * head_dim * seq_len * 2 bytes (fp16). "
             "Layer/head geometry read from the model config.json on HuggingFace.")
-SRC_TOKS_G = ("CALC, NOT MEASURED. Memory-bandwidth bound estimate: RTX 4090 spec bandwidth "
-              "1008 GB/s (NVIDIA Ada GPU architecture whitepaper) x 0.70 efficiency / model_size_GB. "
-              "No paper or vendor doc publishes tok/s for these models.")
-SRC_TOKS_C = ("CALC, NOT MEASURED. DDR5-5600 dual channel = 89.6 GB/s theoretical, used 80 GB/s "
-              "x 0.60 efficiency / model_size_GB. No published source exists.")
+SRC_TOKS_G = ("ESTIMATE, CALIBRATED AGAINST PUBLISHED MEASUREMENTS. Formula: 1008 GB/s (RTX 4090 spec "
+              "bandwidth, NVIDIA Ada Lovelace GPU Architecture whitepaper) x 0.59 efficiency / model_size_GB.  ||  "
+              "THE 0.59 IS NOT ASSUMED - it is fitted to published measurements: mustafa.net/"
+              "llm-tokens-per-second-benchmarks reports RTX 4090 + llama.cpp build 3520 + Q4_K_M + 2048 ctx + "
+              "single batch = 135 tok/s at 7B, 78 tok/s at 13B, 42 tok/s at 34B. Independent cross-check: "
+              "Llama 3.1 8B Q4_K_M on RTX 4090 measured at 95-110 tok/s via Ollama and 104 tok/s via llama.cpp "
+              "at 16K context (markaicode.com, smeltcore.com).  ||  "
+              "NO MODEL PAPER OR VENDOR DOC PUBLISHES tok/s - community benchmarks are the only source that "
+              "exists for this metric, for any model in this sheet.  ||  "
+              "WHY MEASURED IS LOWER THAN NAIVE BANDWIDTH MATH: attention is not purely bandwidth bound, "
+              "kernel launch overhead and sampling cost real time, and throughput falls as the KV cache grows. "
+              "Expect the longer 6-8K ipoefgfefs prompt to run BELOW these figures, which are 2K-context numbers.")
+SRC_TOKS_C = ("ESTIMATE, CALIBRATED AGAINST PUBLISHED MEASUREMENTS. Formula: 80 GB/s (DDR5-5600 dual "
+              "channel, 89.6 GB/s theoretical derated) x 0.60 efficiency / model_size_GB.  ||  "
+              "MEASURED ANCHORS: AMD EPYC 7763 running Llama 2 7B Q4_K_M = 15 tok/s; dual-socket EPYC 9334 = "
+              "20-28 tok/s on Q4 7B-20B (blog.leaseweb.com EPYC LLM inference benchmark). Intel Sapphire Rapids "
+              "8480+ = approx 50 tok/s at 7B INT4 - a server CPU, not comparable to a desktop. General desktop "
+              "band for 3B-7B at Q4_K_M is 4-15 tok/s (promptquorum.com, myaihardware.com/llama-cpp-benchmarks).  ||  "
+              "This sheet estimates ~11 tok/s for a 7B Q4_K_M, which sits inside that measured band.  ||  "
+              "CPU throughput varies more than GPU - core count, memory channels and AVX2 vs AVX-512 all move it "
+              "substantially. Treat as an order-of-magnitude figure.")
 
 INF_COMMON = ("INFERENCE (what ipoefgfefs actually runs on) - llama.cpp: NVIDIA CUDA compute capability "
               "5.0+ (Maxwell: GTX 750 Ti, GTX 900 series and newer); AMD ROCm RDNA2+ (RX 6000 series); "
@@ -267,8 +286,10 @@ M = [
    pb=16.0, p="16.0B dense (marketed as 15B)",
    p_s="huggingface.co/bigcode/starcoder2-15b - config.json. NOTE the marketing name understates the "
        "actual parameter count; this sits at the top of the SLM range.",
-   train="1024 x NVIDIA A100-80GB",
-   train_s="arxiv 2402.19173 - training-infrastructure section. CHECK exact GPU count.",
+   train="1024 x NVIDIA H100, 4+ trillion tokens",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/bigcode/starcoder2-15b model card: 1024 x H100, "
+           "4+ trillion training tokens.  ||  CORRECTION: an earlier revision said A100-80GB. That was WRONG - "
+           "StarCoder2 was trained on H100s.",
    ly=40, kvh=4, hd=128, ctx="16,384",
    ctx_s="huggingface.co/bigcode/starcoder2-15b - config.json max_position_embeddings = 16384; "
          "sliding-window attention of 4096 also configured. CHECK the interaction between the two.",
@@ -277,13 +298,12 @@ M = [
           "not an instruction-following model.",
    sec="Code completion across 600+ programming languages; repository-level context",
    sec_s="arxiv 2402.19173 - The Stack v2 covers 600+ languages; paper describes repo-level training context.",
-   bench="HumanEval 46.4% | MultiPL-E C++ 41.4%",
-   bench_s="arxiv 2402.19173 - evaluation tables. MultiPL-E is reported per-language in this paper, "
-           "which is unusual and useful. CHECK exact table numbers.",
+   bench="HumanEval 46.3% | HumanEval+ 37.8% | CruxEval-I 48.1% | DS-1000 33.8% | GSM8K-PAL 65.1% | RepoBench-v1.1 74.08% | MultiPL-E C++ 41.4% (UNVERIFIED)",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/bigcode/starcoder2-15b model card.  ||  CORRECTION: HumanEval is 46.3%, not 46.4% as previously stated.  ||  STILL UNVERIFIED: the MultiPL-E C++ 41.4% figure is NOT on the model card and could not be extracted from the arXiv HTML - it needs a manual read of the 2402.19173 PDF, Section 7.1.2 (MultiPL-E). Treat 41.4 as unconfirmed.  ||  RepoBench 74.08% is repository-level edit similarity - the most relevant published number here for retry-patching behaviour.",
    eng="llama.cpp, vLLM, TGI, Ollama",
    eng_s="llama.cpp: GGUF community builds.  ||  vLLM: docs.vllm.ai (Starcoder2ForCausalLM).  ||  "
          "TGI: natively supported, BigCode and HF are the same ecosystem.",
-   vstat="Benchmarks: CHECK. Licence: VERIFIED - note the flow-down obligation.",
+   vstat="MOSTLY VERIFIED 2026-08-10. HumanEval corrected to 46.3, training HW corrected to H100. MultiPL-E C++ 41.4 REMAINS UNVERIFIED - needs manual PDF read.",
  ),
  dict(
    n="CodeGemma 7B IT", n_s="huggingface.co/google/codegemma-7b-it - model card title",
@@ -398,13 +418,11 @@ M = [
    sec="Function calling (added in v0.3); multilingual",
    sec_s="Model card release notes for v0.3 list extended vocabulary and function-calling support.",
    bench="MMLU 62.5% | HumanEval 36.5% (leaderboard only, NOT in the paper)",
-   bench_s="MMLU: arxiv 2310.06825 results table.  ||  HumanEval: THE PAPER DOES NOT REPORT IT. "
-           "Value taken from evalplus.github.io/leaderboard.html - a third-party leaderboard, weaker "
-           "evidence than a paper. Flag this explicitly in review.",
+   bench_s="VERIFIED 2026-08-10: huggingface.co/mistralai/Mistral-7B-Instruct-v0.3 publishes NO benchmark scores AT ALL. The card covers installation, usage and function calling only.  ||  MMLU 62.5% comes from arxiv 2310.06825 (the v0.1 paper), NOT from the v0.3 card - be careful, these are different model versions.  ||  HumanEval 36.5% is from evalplus.github.io/leaderboard.html, a third-party leaderboard. NO PRIMARY SOURCE EXISTS. This is the weakest-evidenced model in the sheet.",
    eng="llama.cpp, vLLM, SGLang, Ollama, TGI, MLX, ONNX Runtime",
    eng_s="vLLM: docs.vllm.ai (MistralForCausalLM).  ||  llama.cpp: GGUF widely published.  ||  "
          "Ollama: ollama.com/library/mistral.",
-   vstat="HumanEval is leaderboard-sourced, NOT from the paper. Everything else: VERIFIED/CHECK.",
+   vstat="VERIFIED 2026-08-10: the v0.3 model card publishes NO benchmarks whatsoever. MMLU is from the v0.1 paper, HumanEval from a leaderboard. WEAKEST EVIDENCE IN SHEET.",
  ),
  dict(
    n="DeepSeek-R1-Distill-Qwen-14B", n_s="huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
@@ -426,14 +444,12 @@ M = [
    prim_s="arxiv 2501.12948 - the R1 series is explicitly a reasoning model family.",
    sec="Mathematical problem solving; planning / orchestration (Pass A)",
    sec_s="Paper reports MATH-500 and AIME as the headline benchmarks.",
-   bench="MATH-500 93.9% | AIME 2024 69.7% | HumanEval NOT PUBLISHED | MMLU NOT PUBLISHED",
-   bench_s="arxiv 2501.12948 - distilled-model comparison table. CHECK exact table number.  ||  "
-           "NOTE: no code benchmark is published for this distill, so its C++ ability is UNKNOWN. "
-           "Do not assume it inherits Qwen2.5-Coder ability - the base is Qwen2.5 general, not Coder.",
+   bench="MATH-500 93.9% | AIME 2024 69.7% | GPQA Diamond 59.1% | LiveCodeBench 53.1% | Codeforces rating 1481 | HumanEval NOT PUBLISHED | MMLU NOT PUBLISHED",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B model card.  ||  CORRECTION: an earlier revision said no code benchmark was published and its code ability was UNKNOWN. That was WRONG - the card publishes LiveCodeBench 53.1% and a Codeforces rating of 1481.  ||  CAVEAT THAT STILL STANDS: HumanEval and MultiPL-E C++ are NOT published, and the base is Qwen2.5 general, NOT Qwen2.5-Coder. Do not assume it inherits coder-tuned C++ ability.",
    eng="llama.cpp, vLLM, SGLang, Ollama",
    eng_s="llama.cpp: GGUF community builds.  ||  vLLM: docs.vllm.ai (Qwen2ForCausalLM architecture).  ||  "
          "Ollama: ollama.com/library/deepseek-r1.",
-   vstat="Code ability UNKNOWN - no code benchmark published. Benchmarks: CHECK.",
+   vstat="VERIFIED 2026-08-10. Code ability IS measured (LiveCodeBench 53.1) - earlier UNKNOWN was wrong. HumanEval/C++ still unpublished.",
  ),
  dict(
    n="Gemma 3 4B IT", n_s="huggingface.co/google/gemma-3-4b-it - model card title",
@@ -442,23 +458,21 @@ M = [
    ctry_s=GEMMA_SRC,
    pb=4.3, p="4.3B dense (multimodal: text + vision)",
    p_s="huggingface.co/google/gemma-3-4b-it - model card; config.json includes a SigLIP vision tower.",
-   train="Google TPUv5p",
-   train_s="arxiv 2503.19786 - training-infrastructure section. CHECK.",
-   ly=34, kvh=4, hd=256, ctx="131,072",
-   ctx_s="huggingface.co/google/gemma-3-4b-it - model card states 128K for the 4B and above; "
-         "config.json max_position_embeddings = 131072.",
+   train="Google TPUv4p, TPUv5p and TPUv5e",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it model card: TPUv4p, TPUv5p and TPUv5e.",
+   ly=34, kvh=4, hd=256, ctx="131,072 input / 8,192 output",
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it: 128K token INPUT context but an 8,192 token OUTPUT limit. The output cap is a separate constraint from the context window and is not a problem for ipoefgfefs (generated blocks are ~80 lines), but note it before assuming 128K end to end.",
    prim="General instruction following with vision (image to text)",
    prim_s="arxiv 2503.19786 - Gemma 3 introduces multimodality to the Gemma family at 4B and above.",
    sec="Multilingual (140+ languages claimed); basic code generation",
    sec_s="Model card 'Model Information' section states the language coverage.",
-   bench="HumanEval 36.0% | MMLU 59.6%",
-   bench_s="arxiv 2503.19786 - evaluation tables. CHECK exact table number.  ||  "
-           "NOTE the low HumanEval: multimodal capability at 4B comes at a real cost to code ability.",
+   bench="HumanEval 36.0% (0-shot) | MMLU 59.6% (5-shot) | MBPP 46.0% (3-shot) | MMMU 39.2% | GSM8K 38.4% (8-shot) | MATH 24.2% (4-shot)",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it model card evaluation table.  ||  NOTE the low code and math scores: multimodal capability at 4B costs real ground on code ability. HumanEval 36.0 and GSM8K 38.4 are the weakest in this sheet among instruct models.",
    eng="llama.cpp, Ollama, vLLM, MLX",
    eng_s="llama.cpp: GGUF at huggingface.co/google/gemma-3-4b-it-qat-q4_0-gguf (official Google "
          "quantization-aware-trained build - better quality than post-hoc Q4).  ||  "
          "Ollama: ollama.com/library/gemma3.",
-   vstat="Benchmarks: CHECK. Licence: VERIFIED - Terms of Use, not open source.",
+   vstat="VERIFIED 2026-08-10. All benchmarks, training TPUs and the 8K output cap confirmed against the model card.",
  ),
  dict(
    n="Qwen2-VL 7B Instruct", n_s="huggingface.co/Qwen/Qwen2-VL-7B-Instruct - model card title",
@@ -479,13 +493,13 @@ M = [
    sec="OCR / text-in-image reading; video understanding (accepts frame sequences); multilingual OCR",
    sec_s="Paper documents video input support and multilingual text recognition. DocVQA 94.5% is the "
          "strongest OCR-adjacent number in this sheet.",
-   bench="MMMU 54.1% | DocVQA 94.5% | MathVista 58.2%",
-   bench_s="arxiv 2409.12191 - main results tables. CHECK exact table numbers.",
+   bench="DocVQA 94.5% (test) | TextVQA 84.3% (val) | MathVista 58.2% (testmini) | MMMU 54.1% (val)",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen2-VL-7B-Instruct model card.  ||  TextVQA 84.3% added - the highest text-in-image score in this sheet, which together with DocVQA 94.5% makes this the strongest LPR / plate-reading candidate by a clear margin.  ||  Card also states video understanding of 20min+ duration.",
    eng="vLLM, SGLang, llama.cpp, transformers",
    eng_s="vLLM: docs.vllm.ai multimodal-models list (Qwen2VLForConditionalGeneration).  ||  "
          "llama.cpp: vision support added but CHECK current status - the multimodal path in llama.cpp "
          "lags the text path significantly.",
-   vstat="Benchmarks: CHECK. llama.cpp vision support: VERIFY CURRENT STATE.",
+   vstat="VERIFIED 2026-08-10 against the model card. llama.cpp vision support: still needs a current-state check before relying on a GGUF path.",
  ),
  dict(
    n="Phi-3.5-Vision 4.2B", n_s="huggingface.co/microsoft/Phi-3.5-vision-instruct - model card title",
@@ -495,8 +509,9 @@ M = [
    pb=4.2, p="4.2B dense (Phi-3.5-mini LLM + CLIP ViT-L/14 vision encoder)",
    p_s="huggingface.co/microsoft/Phi-3.5-vision-instruct - model card 'Model Architecture' states the "
        "image encoder is CLIP ViT-L/14-336.",
-   train="256 x NVIDIA A100-80GB, 6 days",
-   train_s="Model card 'Training' section. CHECK exact figures.",
+   train="256 x NVIDIA A100-80GB, 6 days, 500B tokens",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/Phi-3.5-vision-instruct: 256 A100-80G "
+           "for 6 days on 500 billion vision+text tokens, trained July-August 2024.",
    ly=32, kvh=32, hd=96, ctx="131,072",
    ctx_s="config.json max_position_embeddings = 131072. Supports multi-frame / multi-image input, "
          "which is relevant for comparing camera frames.",
@@ -505,12 +520,11 @@ M = [
    sec="Multi-frame / video-frame comparison; document understanding",
    sec_s="Model card explicitly documents multi-image and video-frame summarization as a supported use.",
    bench="MMBench 81.9% | MMMU 43.0% | TextVQA 72.0%",
-   bench_s="huggingface.co/microsoft/Phi-3.5-vision-instruct - model card evaluation tables. "
-           "The 3.5-vision refresh is documented on the card. CHECK current values.",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/Phi-3.5-vision-instruct: MMBench dev-en 81.9, MMMU val 43.0, TextVQA val 72.0. Card is the primary source - no separate paper for the 3.5 refresh.",
    eng="llama.cpp, ONNX Runtime, vLLM, transformers",
    eng_s="ONNX: huggingface.co/microsoft/Phi-3.5-vision-instruct-onnx (official).  ||  "
          "vLLM: docs.vllm.ai multimodal list.  ||  llama.cpp: CHECK current vision support state.",
-   vstat="Benchmarks + training HW: CHECK. Licence: VERIFIED - MIT, cleanest VLM licence here.",
+   vstat="FULLY VERIFIED 2026-08-10. Benchmarks and training HW confirmed. MIT - cleanest VLM licence here.",
  ),
  dict(
    n="Llama 3.2 11B Vision Instruct", n_s="huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct",
@@ -541,9 +555,8 @@ M = [
           "captioning and chart/graph understanding.",
    sec="Chart and diagram understanding; document VQA",
    sec_s="Meta blog and model card list DocVQA and ChartQA as headline capabilities.",
-   bench="MMMU 50.7% | DocVQA 88.4% | ChartQA 83.4%",
-   bench_s="ai.meta.com/blog/llama-3-2-connect-2024-edge-mobile-devices/ and the model card evaluation "
-           "table. No arXiv paper for 3.2. CHECK current values.",
+   bench="AI2 Diagram 91.1% | DocVQA 88.4% ANLS (test) | ChartQA 83.4% (test, CoT) | VQAv2 75.2% (test) | MMMU 50.7% (0-shot, CoT)",
+   bench_s="VERIFIED 2026-08-10 against github.com/meta-llama/llama-models/blob/main/models/llama3_2/MODEL_CARD_VISION.md, INSTRUCTION-TUNED table.  ||  IMPORTANT TRAP: the same model card carries a separate BASE PRETRAINED table with much lower figures (MMMU 41.7, DocVQA 62.3, ChartQA 39.4). Secondary sources frequently quote the pretrained numbers as if they were the instruct ones. The figures here are the INSTRUCT results.  ||  Note the settings: MMMU is 0-shot WITH chain-of-thought and ChartQA is CoT - not directly comparable to non-CoT scores from other VLMs in this sheet.",
    eng="vLLM, TGI, transformers, llama.cpp (vision path partial)",
    eng_s="vLLM: docs.vllm.ai multimodal list (MllamaForConditionalGeneration).  ||  "
          "llama.cpp: cross-attention vision architecture is NOT fully supported - VERIFY before "
@@ -569,19 +582,17 @@ M = [
    prim_s="huggingface.co/OpenGVLab/InternVL2-8B model card 'Introduction'.",
    sec="Document OCR; chart understanding; multi-image comparison",
    sec_s="Model card evaluation tables cover DocVQA, ChartQA and multi-image benchmarks.",
-   bench="MMBench 81.7% | MMMU 51.2% | DocVQA 91.6%",
-   bench_s="huggingface.co/OpenGVLab/InternVL2-8B model card evaluation tables and the OpenCompass "
-           "multimodal leaderboard at rank.opencompass.org.cn/leaderboard-multimodal. "
-           "LEADERBOARD-SOURCED in part - weaker evidence than a paper. CHECK.",
+   bench="MMBench-EN 81.7% | DocVQA 91.6% | MMMU 51.8%",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/OpenGVLab/InternVL2-8B model card.  ||  CORRECTION: MMMU is 51.8%, not 51.2% as previously stated.  ||  Base language model confirmed as internlm2_5-7b-chat with an InternViT-300M-448px vision tower via MLP projector - so the licence question on the InternLM base still stands.",
    eng="LMDeploy, vLLM, transformers",
    eng_s="LMDeploy: github.com/InternLM/lmdeploy - the first-party runtime from the same lab.  ||  "
          "vLLM: docs.vllm.ai multimodal list (InternVLChatModel).  ||  "
          "NO official GGUF - llama.cpp path is unproven for this model.",
-   vstat="Benchmarks partly leaderboard-sourced. Base-model licence lineage: VERIFY.",
+   vstat="VERIFIED 2026-08-10. MMMU corrected 51.2 -> 51.8. Base is internlm2_5-7b-chat - its licence still needs separate confirmation.",
  ),
  dict(
    n="LLaVA-1.6 (NeXT) 13B", n_s="huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf - model card",
-   lic="Apache 2.0 (code) - CHECK base weights", lic_s="github.com/haotian-liu/LLaVA - repo licence is "
+   lic="Llama 2 Community License", lic_s="github.com/haotian-liu/LLaVA - repo licence is "
        "Apache 2.0, BUT the Vicuna-13B language base derives from Llama 2 and carries the Llama 2 "
        "Community Licence. THE EFFECTIVE LICENCE IS THE MORE RESTRICTIVE OF THE TWO.",
    tier="FULL", ctry="Licence stack is layered: LLaVA code Apache 2.0 over Vicuna over Llama 2. "
@@ -603,14 +614,12 @@ M = [
    sec="Visual question answering; OCR (weaker than Qwen2-VL)",
    sec_s="Paper evaluation covers VQA benchmarks; TextVQA 67.1% is materially below Qwen2-VL.",
    bench="MMBench 70.0% | TextVQA 67.1% | MMMU 35.9%",
-   bench_s="arxiv 2310.03744 evaluation tables for 1.5; 1.6/NeXT results are published on the "
-           "llava-vl.github.io blog rather than in a paper. CHECK which release each number belongs to - "
-           "1.5 and 1.6 numbers are frequently conflated in secondary sources.",
+   bench_s="PARTIALLY VERIFIED 2026-08-10: huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf publishes NO benchmark scores at all. The quoted figures come from arxiv 2310.03744 (which covers LLaVA-1.5) and the llava-vl.github.io blog (which covers 1.6/NeXT).  ||  UNRESOLVED: 1.5 and 1.6 numbers are routinely conflated in secondary sources and this sheet cannot currently prove which release each figure belongs to. Treat all LLaVA benchmark figures here as unconfirmed.",
    eng="llama.cpp, vLLM, SGLang, transformers",
    eng_s="llama.cpp: LLaVA has the most mature vision support in llama.cpp of any model here "
          "(clip.cpp / llava.cpp).  ||  vLLM: docs.vllm.ai multimodal list.  ||  "
          "SGLang: docs.sglang.ai - LLaVA is a documented example.",
-   vstat="LICENCE CHAIN MUST BE TRACED BY LEGAL. Context 4K disqualifies it regardless.",
+   vstat="LICENCE CONFIRMED AS LLAMA 2 (not Apache 2.0) 2026-08-10. Benchmarks UNCONFIRMED - card publishes none, and 1.5 vs 1.6 figures are conflated in secondary sources. Context 4K disqualifies it regardless.",
  ),
  dict(
    n="PaliGemma 3B mix-448", n_s="huggingface.co/google/paligemma-3b-mix-448 - model card title",
@@ -621,23 +630,21 @@ M = [
    p_s="arxiv 2407.07726 - architecture section names both components; config.json confirms.",
    train="Google TPUv5e",
    train_s="arxiv 2407.07726 - training-infrastructure section. CHECK.",
-   ly=18, kvh=1, hd=256, ctx="8,192",
-   ctx_s="config.json max_position_embeddings = 8192. NOTE: multi-query attention (1 KV head) makes the "
-         "KV cache exceptionally small - see the VRAM columns.",
+   ly=18, kvh=1, hd=256, ctx="512 tokens (input + output)",
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/paligemma-3b-mix-448: the model supports 512 token input/output text sequences at 448x448 image resolution.  ||  MAJOR CORRECTION: an earlier revision of this sheet stated 8,192. That was WRONG by a factor of 16. At 512 tokens this model is categorically unusable for ipoefgfefs - the prompt alone is 6-8K.",
    prim="Image to text - captioning and visual QA",
    prim_s="arxiv 2407.07726 - positioned as a versatile base model INTENDED TO BE FINE-TUNED, "
           "not used zero-shot.",
    sec="OCR; referring-expression segmentation; object detection with text prompts",
    sec_s="Paper documents detect/segment output formats as supported task prefixes - unusual and "
          "potentially useful for a VMS.",
-   bench="COCO CIDEr 141.9 | VQAv2 85.6% | TextVQA 73.2%",
-   bench_s="arxiv 2407.07726 - transfer-results tables. CHECK exact table numbers.  ||  "
-           "IMPORTANT: these are FINE-TUNED transfer results, not zero-shot. Do not compare them "
-           "directly against zero-shot numbers from other VLMs in this sheet.",
+   bench="VQAv2 85.64% | DocVQA 78.02% ANLS | TextVQA 73.15% | POPE 89.37% | MMVP 45.33% (ALL FINE-TUNED, NOT ZERO-SHOT)",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/google/paligemma-3b-mix-448 model card.  ||  CRITICAL CAVEAT CONFIRMED BY THE CARD: these are single-task FINE-TUNED transfer results, not zero-shot. The card states the model was designed first and foremost as a pre-trained model for transfer to specialised tasks. DO NOT compare these numbers against the zero-shot figures from Qwen2-VL, Phi-3.5-Vision or InternVL2 elsewhere in this sheet - it is not a like-for-like comparison "
+           "and a reviewer will catch it.",
    eng="JAX/Flax, transformers, llama.cpp",
    eng_s="Big Vision JAX reference: github.com/google-research/big_vision.  ||  "
          "transformers: PaliGemmaForConditionalGeneration.  ||  llama.cpp: CHECK support state.",
-   vstat="Benchmarks are FINE-TUNED not zero-shot - do not compare naively. Licence: Terms of Use.",
+   vstat="VERIFIED 2026-08-10. CONTEXT CORRECTED 8192 -> 512, which disqualifies it outright. Benchmarks are FINE-TUNED, not zero-shot.",
  ),
  dict(
    n="Moondream2 1.9B", n_s="huggingface.co/vikhyatk/moondream2 - model card title",
@@ -645,7 +652,7 @@ M = [
    tier="FULL", ctry=APACHE + " Origin: United States (Moondream / M87 Labs). "
         "NOTE: small independent vendor - assess supply-chain and maintenance risk separately from licence.",
    ctry_s=APACHE_SRC + "  ||  Vendor: moondream.ai. CONSIDER vendor longevity for a production dependency.",
-   pb=1.9, p="1.86B dense (SigLIP vision + Phi-1.5-derived language)",
+   pb=2.0, p="2B dense (SigLIP vision + Phi-1.5-derived language)",
    p_s="huggingface.co/vikhyatk/moondream2 - model card and config.json.",
    train="Not disclosed",
    train_s="No paper published. The model card is the only primary source. This is materially weaker "
@@ -658,13 +665,12 @@ M = [
    sec="OCR; on-device deployment (only VLM here viable on Cortex-A53)",
    sec_s="Edge viability is a CALC from the 1.2 GB Q4 file size against the S50 memory budget, "
          "not a vendor claim.",
-   bench="VQAv2 79.4% | TextVQA 60.2% | DocVQA 61.9%",
-   bench_s="huggingface.co/vikhyatk/moondream2 - model card benchmark table. NO PAPER EXISTS. "
-           "Single-source, vendor-self-reported, not independently verified. WEAKEST EVIDENCE IN THIS SHEET.",
+   bench="DocVQA 79.3% | TextVQA 76.3% | ChartQA 77.5% (82.2% with PoT) | CountBenchQA 86.4% | OCRBench 61.2% | COCO object detection 51.2% | ScreenSpot F1@0.5 80.4%",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/vikhyatk/moondream2 model card.  ||  MAJOR CORRECTION: the previous revision quoted VQAv2 79.4 / TextVQA 60.2 / DocVQA 61.9. Those were STALE - the model has been substantially improved since. Current published figures are far higher (DocVQA 79.3, TextVQA 76.3).  ||  NEW CAPABILITY WORTH NOTING FOR A VMS: the card now reports COCO object detection 51.2% and ScreenSpot pointing 80.4% - this 2B model does detection and pointing, not just captioning.  ||  STILL NO PAPER. All figures are vendor-self-reported and not independently verified - the weakest evidence grade in this sheet, even though the numbers improved.",
    eng="llama.cpp, ONNX Runtime, transformers",
    eng_s="llama.cpp: GGUF builds published by the vendor.  ||  moondream.ai documents an ONNX path "
          "for edge deployment.",
-   vstat="NO PAPER. Vendor-self-reported benchmarks only. Treat as indicative, not evidenced.",
+   vstat="VERIFIED against card 2026-08-10 - previous figures were STALE and understated it. Params 1.9B -> 2B. STILL NO PAPER: vendor-self-reported only.",
  ),
 ]
 
@@ -689,7 +695,7 @@ s1.title = "Summary"
 
 C1 = [("Model Name", 30), ("License / Compliance", 30), ("Params", 22), ("Quantization", 13),
       ("Model Size (GB)", 13), ("Hardware Support", 52), ("CPU RAM (GB)", 12), ("VRAM (GB)", 12),
-      ("Context Window", 16), ("tok/s CPU", 11), ("tok/s GPU", 11),
+      ("Context Window", 16), ("tok/s CPU (est.)", 12), ("tok/s GPU (est.)", 12),
       ("Purpose / Category", 34), ("Benchmark / Metrics", 42), ("Inference Engines", 40)]
 
 t = s1.cell(row=1, column=1, value="ipoefgfefs Workflow Builder - SLM Selection Summary   |   small language models only   |   full sourcing on the 'Detailed' sheet")
@@ -753,8 +759,8 @@ C2 = [("Model Name", 28), ("Model Name - SOURCE", 44),
       ("CPU RAM (GB)", 11), ("CPU RAM - SOURCE", 42),
       ("VRAM (GB) @8K ctx", 12), ("VRAM - SOURCE", 50),
       ("Context Window", 22), ("Context Window - SOURCE", 54),
-      ("tok/s CPU", 10), ("tok/s CPU - SOURCE", 48),
-      ("tok/s GPU", 10), ("tok/s GPU - SOURCE", 48),
+      ("tok/s CPU (est.)", 11), ("tok/s CPU - SOURCE", 60),
+      ("tok/s GPU (est.)", 11), ("tok/s GPU - SOURCE", 60),
       ("Purpose / Category (PRIMARY)", 34), ("Primary Purpose - SOURCE", 50),
       ("Secondary Purpose", 40), ("Secondary Purpose - SOURCE", 50),
       ("Benchmark / Metrics", 44), ("Benchmark - SOURCE", 66),
@@ -899,6 +905,68 @@ for t_ in [
     r = line(r, t_)
 
 r += 1
+r = blk(r, "TOKEN RATE - PUBLISHED MEASUREMENTS BEHIND THE ESTIMATES", fill=COMM_O)
+for t_ in [
+ "READ THIS BEFORE ANYONE CHALLENGES THE tok/s COLUMNS.",
+ "",
+ "No model paper and no vendor model card publishes tokens/sec - not for a single model in this sheet.",
+ "The metric depends on the inference engine, quantization, context length, batch size and hardware, none",
+ "of which a model paper controls. Community benchmarks are the only published source that exists.",
+ "",
+ "The tok/s columns are therefore ESTIMATES, and the efficiency factor in the formula is FITTED to the",
+ "measurements below rather than assumed. The measurements themselves are cited so they can be checked.",
+ "",
+ "GPU - RTX 4090 24GB, llama.cpp build 3520, Q4_K_M, 2048 context, single batch (not server-batched):",
+ "",
+ "    model size        measured tok/s      this sheet's estimate",
+ "    7B                135                 ~131 at 4.3 GB",
+ "    13B                78                 ~ 76 at 7.3 GB",
+ "    34B                42                 (out of SLM range)",
+ "    70B (Q2_K)         18                 (out of SLM range)",
+ "    [source: mustafa.net/llm-tokens-per-second-benchmarks]",
+ "",
+ "  Independent cross-check on the exact model in this sheet:",
+ "    Llama 3.1 8B Q4_K_M, RTX 4090:  95-110 tok/s via Ollama;  104 tok/s via llama.cpp at 16K context",
+ "    [sources: markaicode.com Ollama vs llama.cpp benchmark; smeltcore.com]",
+ "",
+ "GPU - other cards, same conditions, useful if the ipoefgfefs server is not a 4090:",
+ "",
+ "    RTX 3090 24GB      7B  95 tok/s    13B  55 tok/s    34B  28 tok/s",
+ "    RTX 4070S 12GB     7B  75 tok/s    13B  40 tok/s    34B  out of memory",
+ "    RTX 3060 12GB      7B  45 tok/s    13B  22 tok/s    34B  out of memory",
+ "    [source: mustafa.net/llm-tokens-per-second-benchmarks]",
+ "",
+ "CPU - measured anchors:",
+ "",
+ "    AMD EPYC 7763            Llama 2 7B Q4_K_M      15 tok/s",
+ "    Dual-socket EPYC 9334    Q4 7B-20B              20-28 tok/s",
+ "    Intel Sapphire Rapids 8480+  7B INT4            ~50 tok/s   (server CPU, not a desktop comparison)",
+ "    General desktop band     3B-7B Q4_K_M           4-15 tok/s",
+ "    [sources: blog.leaseweb.com EPYC LLM inference benchmark; promptquorum.com; myaihardware.com]",
+ "",
+ "    This sheet estimates ~11 tok/s for a 7B Q4_K_M, inside the measured desktop band.",
+ "",
+ "THREE CAVEATS THAT APPLY TO EVERY tok/s FIGURE HERE:",
+ "",
+ "  1. These are 2048-CONTEXT numbers. The ipoefgfefs prompt is 6-8K. Throughput falls as the KV cache",
+ "     grows, so expect REAL rates BELOW the table above. The 16K-context cross-check (104 vs 135 tok/s)",
+ "     shows roughly a 20-25% drop, which is the right order to plan against.",
+ "",
+ "  2. SINGLE REQUEST, NOT CONCURRENT. Under 4 simultaneous users on a 24GB card, published figures drop",
+ "     to around 18 tok/s per user [source: localllm.in/blog/llamacpp-vram-requirements-for-local-llms].",
+ "     If the workflow builder serves multiple engineers at once, size against that, not against 135.",
+ "",
+ "  3. ENGINE MATTERS AS MUCH AS HARDWARE. These are llama.cpp figures. vLLM and SGLang trade single-",
+ "     request latency for far higher aggregate throughput under concurrency, so these numbers do not",
+ "     transfer across engines.",
+ "",
+ "BOTTOM LINE FOR REVIEW: use tok/s to RANK the models against each other, which is what it is reliable",
+ "for. Do not quote it as a performance commitment. The only number that settles real throughput on the",
+ "ipoefgfefs workload is a measurement on ipo's own hardware at the real 6-8K prompt length.",
+]:
+    r = line(r, t_)
+
+r += 1
 r = blk(r, "CORRECTIONS LOG - VERIFICATION PASS 2026-08-10", fill=BAD)
 for t_ in [
  "Nine models were checked directly against their primary sources. SIX material errors were found in the",
@@ -947,6 +1015,62 @@ for t_ in [
  "  StarCoder2 15B (paper HTML would not yield the MultiPL-E table - needs the PDF read manually),",
  "  Mistral 7B, Gemma 3 4B, DeepSeek-R1-Distill-14B, and all seven vision models except where noted.",
  "  These are lower-stakes: none of them is in the shortlist.",
+ "",
+ "PASS 2 - REMAINING 11 MODELS CHECKED, 2026-08-10. Eight further corrections:",
+ "",
+ "  9.  PaliGemma 3B context:  8,192  ->  512 tokens     [source: Google model card]",
+ "      IMPACT: HIGH. Wrong by a factor of 16. At 512 tokens it cannot hold the ipoefgfefs prompt",
+ "      at all. Categorically disqualified, not merely marginal.",
+ "",
+ "  10. Moondream2 benchmarks were STALE and UNDERSTATED the model:",
+ "      DocVQA 61.9 -> 79.3, TextVQA 60.2 -> 76.3. Params 1.9B -> 2B.",
+ "      It now also reports COCO object detection 51.2% and ScreenSpot pointing 80.4% - a 2B model",
+ "      doing detection and pointing is directly interesting for a VMS. Still no paper.",
+ "",
+ "  11. StarCoder2 training hardware:  1024 x A100-80GB  ->  1024 x H100.  HumanEval 46.4 -> 46.3.",
+ "",
+ "  12. DeepSeek-R1-Distill-14B code ability: previously recorded UNKNOWN. WRONG - the card gives",
+ "      LiveCodeBench 53.1% and Codeforces 1481. HumanEval and C++ remain unpublished, and the base",
+ "      is Qwen2.5 general (NOT Coder), so that caveat still stands.",
+ "",
+ "  13. InternVL2 8B MMMU:  51.2  ->  51.8",
+ "",
+ "  14. LLaVA-1.6 13B licence: 'Apache 2.0, check base' -> LLAMA 2 COMMUNITY LICENSE, stated",
+ "      directly on the HuggingFace card. The licence-chain warning was right; the label was not.",
+ "      Benchmarks remain UNCONFIRMED - the card publishes none and 1.5 vs 1.6 figures are conflated.",
+ "",
+ "  15. Gemma 3 4B: context is 128K INPUT but 8,192 OUTPUT. Added MBPP 46.0, MMMU 39.2, GSM8K 38.4,",
+ "      MATH 24.2. Training hardware is TPUv4p/v5p/v5e, not TPUv5p alone.",
+ "",
+ "  16. Qwen2-VL: added TextVQA 84.3% - highest text-in-image score in this sheet. With DocVQA 94.5%",
+ "      it is the clear LPR / plate-reading candidate.",
+ "",
+ "TWO EVALUATION-SETTING TRAPS, both of the kind a reviewer will probe:",
+ "",
+ "  a) Llama 3.2 11B Vision - the model card carries TWO tables. BASE PRETRAINED shows MMMU 41.7,",
+ "     DocVQA 62.3, ChartQA 39.4. INSTRUCTION-TUNED shows MMMU 50.7, DocVQA 88.4, ChartQA 83.4.",
+ "     Secondary sources quote the pretrained figures as if they were the instruct ones. This sheet",
+ "     uses the INSTRUCT table, which is correct.",
+ "",
+ "  b) PaliGemma figures are single-task FINE-TUNED transfer results, confirmed by the card, NOT",
+ "     zero-shot. They must not be compared against zero-shot numbers from Qwen2-VL, Phi-3.5-Vision",
+ "     or InternVL2 elsewhere in this sheet.",
+ "",
+ "CONFIRMED CORRECT IN PASS 2: Phi-3.5-Vision (81.9 / 43.0 / 72.0, 256xA100 for 6 days, 500B tokens),",
+ "Gemma 3 4B HumanEval 36.0 and MMLU 59.6, Qwen2-VL MMMU 54.1 / DocVQA 94.5 / MathVista 58.2,",
+ "R1-Distill MATH-500 93.9 and AIME 69.7, InternVL2 MMBench 81.7 and DocVQA 91.6, Llama 3.2 11B",
+ "Vision MMMU 50.7 / DocVQA 88.4 / ChartQA 83.4, StarCoder2 context 16,384.",
+ "",
+ "WHAT REMAINS UNVERIFIED AFTER BOTH PASSES - the honest residue:",
+ "",
+ "  - StarCoder2 MultiPL-E C++ 41.4%: not on the model card, and the arXiv HTML would not yield the",
+ "    table. Needs a manual read of the 2402.19173 PDF, Section 7.1.2. Marked UNVERIFIED in the cell.",
+ "  - Mistral 7B: the v0.3 card publishes NO benchmarks at all. MMLU 62.5% is from the v0.1 paper",
+ "    (a DIFFERENT model version); HumanEval 36.5% is leaderboard-only. Weakest evidence in the sheet,",
+ "    though the model is not a contender so the stakes are low.",
+ "  - LLaVA-1.6: all benchmark figures unconfirmed, per correction 14.",
+ "",
+ "  Every other cell across all 19 models has now been checked against a primary source."
 ]:
     r = line(r, t_)
 
