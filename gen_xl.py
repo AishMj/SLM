@@ -103,23 +103,26 @@ M = [
    train="Not disclosed in the technical report",
    train_s="arxiv 2409.12186 - no training-hardware section is present in the paper. CHECK if a later "
            "revision adds one.",
-   ly=28, kvh=4, hd=128, ctx="32,768 native (131,072 with YaRN scaling)",
-   ctx_s="huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct - config.json max_position_embeddings = 32768; "
-         "model card 'Processing Long Texts' section describes YaRN extension to 131072.",
+   ly=28, kvh=4, hd=128, ctx="131,072 full support (32,768 in the default config)",
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct: card states 131,072 "
+         "full context support with 32,768 as the default configured length. Architecture confirmed: 28 "
+         "layers, 28 query heads, 4 KV heads (GQA). Params confirmed 7.61B total / 6.53B non-embedding.",
    prim="Code generation - C++ / multi-language",
    prim_s="arxiv 2409.12186 title and abstract: 'Qwen2.5-Coder Technical Report', described as a code-specific model series.",
    sec="Fill-in-the-Middle (FIM) code completion; code reasoning; code repair",
    sec_s="huggingface.co/Qwen/Qwen2.5-Coder-7B - base model card documents the FIM special tokens "
          "<|fim_prefix|>, <|fim_suffix|>, <|fim_middle|>.",
-   bench="HumanEval 88.4% | MultiPL-E C++ 63.4% | MBPP 83.5%",
-   bench_s="HumanEval: qwenlm.github.io/blog/qwen2.5-coder/ (official Qwen blog, results table).  ||  "
-           "MultiPL-E C++ and MBPP: arxiv 2409.12186, multi-language evaluation section.  ||  "
-           "CHECK exact table numbers against the PDF before review.",
+   bench="MultiPL-E C++ 75.6% | HumanEval 88.4% | HumanEval+ 84.1% | MBPP 83.5% | MBPP+ 71.7%",
+   bench_s="VERIFIED 2026-08-10 against arxiv.org/html/2409.12186v3.  ||  "
+           "MultiPL-E C++ 75.6 = TABLE 17 (per-language MultiPL-E breakdown).  ||  "
+           "HumanEval 88.4 / HumanEval+ 84.1 / MBPP 83.5 / MBPP+ 71.7 = TABLE 16.  ||  "
+           "NOTE: the official Qwen blog (qwenlm.github.io/blog/qwen2.5-coder-family/) does NOT publish "
+           "per-model numbers - the technical report is the only primary source for these.",
    eng="llama.cpp, vLLM, SGLang, Ollama, TGI, MLX, TensorRT-LLM",
    eng_s="llama.cpp: GGUF builds published at huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF (official "
          "Qwen repo).  ||  vLLM: docs.vllm.ai supported-models list includes Qwen2ForCausalLM.  ||  "
          "SGLang: docs.sglang.ai supported models.  ||  Ollama: ollama.com/library/qwen2.5-coder.",
-   vstat="Benchmarks: CHECK. Licence/params/context: VERIFIED.",
+   vstat="VERIFIED 2026-08-10. Benchmarks confirmed against arxiv 2409.12186 Tables 16 and 17.",
  ),
  dict(
    n="Phi-4 14B", n_s="huggingface.co/microsoft/phi-4 - model card title",
@@ -129,9 +132,9 @@ M = [
    pb=14.7, p="14.7B dense",
    p_s="huggingface.co/microsoft/phi-4 - model card 'Model Summary' table, Architecture row states 14B "
        "parameters. config.json for exact geometry.",
-   train="1920 x NVIDIA H100-80GB, approx 21 days",
-   train_s="arxiv 2412.08905 - training-details section. CHECK: GPU count and duration quoted from memory, "
-           "confirm against the PDF.",
+   train="1920 x NVIDIA H100-80GB, 21 days",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/phi-4 model card, 'Training' section: "
+           "'1920 H100-80G' for '21 days'.",
    ly=40, kvh=10, hd=128, ctx="16,384",
    ctx_s="huggingface.co/microsoft/phi-4 - model card 'Model Summary' table, Context length row = 16K tokens; "
          "config.json max_position_embeddings = 16384.",
@@ -140,15 +143,18 @@ M = [
           "not a code-specific model.",
    sec="Mathematical reasoning; orchestration / planning (Pass A IR generation)",
    sec_s="arxiv 2412.08905 - reports MATH and GSM8K results alongside general benchmarks.",
-   bench="HumanEval 82.6% | MMLU 84.8% | MATH 80.4% | GSM8K 91.5% | MultiPL-E C++ NOT PUBLISHED",
-   bench_s="arxiv 2412.08905, main results table comparing against GPT-4o-mini and Qwen2.5-14B.  ||  "
-           "CHECK exact table number.  ||  MultiPL-E C++: genuinely absent from the paper - this is a "
-           "gap in the published record, not a gap in this research.",
+   bench="HumanEval 82.6% | MMLU 84.8% | MATH 80.4% | GPQA 56.1% | MGSM 80.6% | DROP 75.5% | "
+         "MultiPL-E C++ NOT PUBLISHED",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/phi-4 model card evaluation table.  ||  "
+           "CORRECTION: an earlier revision of this sheet listed GSM8K 91.5% - Microsoft does NOT publish "
+           "GSM8K for Phi-4. The card reports MGSM 80.6% (multilingual grade-school math) instead. "
+           "The GSM8K figure has been removed as unsourced.  ||  MultiPL-E C++: genuinely absent - a gap "
+           "in the published record, not in this research.",
    eng="llama.cpp, vLLM, Ollama, ONNX Runtime, TGI, MLX",
    eng_s="llama.cpp: GGUF at huggingface.co/microsoft/phi-4-gguf (official Microsoft repo).  ||  "
          "ONNX: huggingface.co/microsoft/phi-4-onnx.  ||  vLLM: docs.vllm.ai supported models "
          "(Phi3ForCausalLM architecture).  ||  Ollama: ollama.com/library/phi4.",
-   vstat="Benchmarks + training HW: CHECK. Licence/params/context: VERIFIED.",
+   vstat="VERIFIED 2026-08-10. Benchmarks and training HW confirmed against the phi-4 model card. GSM8K removed as unsourced.",
  ),
  dict(
    n="Granite 3.3 8B Instruct", n_s="huggingface.co/ibm-granite/granite-3.3-8b-instruct - model card title",
@@ -170,14 +176,17 @@ M = [
    sec="Reasoning; grounded RAG with inline citations; tool/function calling",
    sec_s="Model card documents citation generation and tool-calling capability as first-class features "
          "of the 3.3 release.",
-   bench="HumanEval 67.1% | MMLU 65.5% | GSM8K 80.9% | MultiPL-E C++ NOT PUBLISHED",
-   bench_s="huggingface.co/ibm-granite/granite-3.3-8b-instruct - model card 'Evaluation Results' table. "
-           "IBM publishes no arXiv paper for the 3.3 release, so the model card IS the primary source.  ||  "
-           "CHECK values against the current card - IBM revises these tables between point releases.",
+   bench="HumanEval 89.73% | HumanEval+ 86.09% | MMLU 65.54% | GSM8K 80.89% | MATH-500 69.02% | "
+         "IFEval 74.82% | MultiPL-E C++ NOT PUBLISHED",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/ibm-granite/granite-3.3-8b-instruct model card, "
+           "'Evaluation Results' table. IBM publishes no arXiv paper for 3.3, so the card IS the primary "
+           "source.  ||  CORRECTION: an earlier revision of this sheet stated HumanEval 67.1% - that was "
+           "WRONG. The published figure is 89.73%, the HIGHEST HumanEval of any model in this sheet.  ||  "
+           "MultiPL-E C++ genuinely absent - IBM publishes no per-language code breakdown.",
    eng="llama.cpp, vLLM, Ollama, TGI, ONNX Runtime",
    eng_s="llama.cpp: GGUF at huggingface.co/ibm-granite/granite-3.3-8b-instruct-GGUF (official IBM repo).  ||  "
          "vLLM: docs.vllm.ai supported models (GraniteForCausalLM).  ||  Ollama: ollama.com/library/granite3.3.",
-   vstat="Benchmarks: CHECK against live card. Licence/params/context: VERIFIED.",
+   vstat="VERIFIED 2026-08-10. HumanEval CORRECTED 67.1 -> 89.73 against the live IBM model card.",
  ),
  dict(
    n="Llama 3.1 8B Instruct", n_s="huggingface.co/meta-llama/Llama-3.1-8B-Instruct - model card title",
@@ -187,9 +196,9 @@ M = [
    pb=8.0, p="8.03B dense",
    p_s="huggingface.co/meta-llama/Llama-3.1-8B-Instruct - model card 'Model Information' table; "
        "config.json: 32 layers, 8 KV heads (GQA), head_dim 128.",
-   train="NVIDIA H100-80GB. Llama 3 family total 39.3M GPU-hours; 8B share 1.46M GPU-hours",
-   train_s="arxiv 2407.21783 - training-compute table breaking down GPU-hours per model size. "
-           "CHECK the exact figures and table number.",
+   train="NVIDIA H100-80GB (700W TDP). 8B share: 1.46M GPU-hours",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/meta-llama/Llama-3.1-8B-Instruct model card, "
+           "'Training Energy Use' table: 1.46M GPU-hours on H100-80GB, 700W per device.",
    ly=32, kvh=8, hd=128, ctx="131,072",
    ctx_s="huggingface.co/meta-llama/Llama-3.1-8B-Instruct - model card states 128K context; "
          "config.json max_position_embeddings = 131072.",
@@ -197,15 +206,19 @@ M = [
    prim_s="arxiv 2407.21783 - described as a general-purpose foundation model family.",
    sec="Reasoning; tool/function calling; multilingual (8 languages officially supported)",
    sec_s="Model card 'Intended Use' section names tool use and lists the 8 supported languages.",
-   bench="HumanEval 72.6% | MMLU 73.0% | GSM8K 84.5% | MultiPL-E C++ NOT PUBLISHED",
-   bench_s="arxiv 2407.21783 - instruction-tuned evaluation tables. This is a 90+ page paper; "
-           "CHECK the exact table number before citing it in review.",
+   bench="HumanEval 72.6% (pass@1) | MMLU 69.4% (macro avg) | MMLU-CoT 73.0% | GSM8K 84.5% (8-shot CoT) | "
+         "MBPP+ 72.8% | MultiPL-E C++ NOT PUBLISHED",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/meta-llama/Llama-3.1-8B-Instruct model card "
+           "evaluation tables.  ||  CORRECTION: an earlier revision listed MMLU 73.0% without qualification. "
+           "The card reports TWO figures: MMLU 69.4% (macro average, standard 5-shot) and MMLU-CoT 73.0% "
+           "(chain-of-thought). Quoting 73.0 as plain MMLU overstates it against models reporting the "
+           "standard metric. Both are now shown.",
    eng="llama.cpp, vLLM, SGLang, TensorRT-LLM, Ollama, TGI, MLX, ONNX Runtime, ExecuTorch",
    eng_s="Broadest support of any model here. llama.cpp: GGUF widely published.  ||  "
          "vLLM: docs.vllm.ai (LlamaForCausalLM is the reference architecture).  ||  "
          "TensorRT-LLM: github.com/NVIDIA/TensorRT-LLM support matrix lists Llama explicitly.  ||  "
          "ExecuTorch: pytorch.org/executorch llama example.",
-   vstat="Benchmarks + training HW: CHECK. Licence/params/context: VERIFIED.",
+   vstat="VERIFIED 2026-08-10. MMLU disambiguated: 69.4 standard vs 73.0 CoT. Training GPU-hours confirmed.",
  ),
  dict(
    n="DeepSeek-Coder-V2-Lite Instruct", n_s="huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
@@ -229,14 +242,18 @@ M = [
    prim_s="arxiv 2406.11931 title: 'DeepSeek-Coder-V2: Breaking the Barrier of Closed-Source Models in Code Intelligence'.",
    sec="Fill-in-the-Middle; mathematical reasoning",
    sec_s="Model card documents FIM tokens; paper reports math benchmarks alongside code.",
-   bench="HumanEval 81.1% | MultiPL-E C++ 56.5% | MBPP+ 68.8%",
-   bench_s="arxiv 2406.11931 - code-benchmark tables. CHECK exact table numbers.",
+   bench="MultiPL-E C++ 75.8% | HumanEval 81.1% | MBPP+ 68.8%",
+   bench_s="VERIFIED 2026-08-10 against arxiv.org/html/2406.11931v1, TABLE 3 (HumanEval, MBPP+ and the "
+           "per-language MultiPL-E breakdown).  ||  CORRECTION: an earlier revision stated C++ 56.5% - "
+           "that was WRONG. Published figure is 75.8%, the highest measured C++ score in this sheet.  ||  "
+           "Paper notes the 16B/2.4B-active model beats the dense 33B on multi-language average "
+           "(65.6% vs 61.9%).",
    eng="llama.cpp, vLLM, SGLang",
    eng_s="llama.cpp: GGUF community builds (no official DeepSeek GGUF repo - CHECK provenance of any "
          "GGUF you download).  ||  vLLM: docs.vllm.ai supported models (DeepseekV2ForCausalLM).  ||  "
          "SGLang: docs.sglang.ai.  ||  NOTE: MoE support in llama.cpp is newer and less battle-tested "
          "than dense-model support.",
-   vstat="Benchmarks + context: CHECK. Licence: VERIFIED but restrictive.",
+   vstat="VERIFIED 2026-08-10. C++ CORRECTED 56.5 -> 75.8 against arxiv 2406.11931 Table 3. Licence remains restrictive.",
  ),
  dict(
    n="StarCoder2 15B", n_s="huggingface.co/bigcode/starcoder2-15b - model card title",
@@ -286,13 +303,18 @@ M = [
           "and generation as the intended use.",
    sec="Code chat; natural-language-to-code",
    sec_s="Same model card, 'Intended Usage' section distinguishes the -it variant as chat-tuned.",
-   bench="HumanEval 56.1% | MultiPL-E C++ NOT PUBLISHED",
-   bench_s="ai.google.dev/gemma/docs/codegemma/model_card - evaluation table. Google publishes the "
-           "CodeGemma report as documentation rather than a peer-reviewed paper. CHECK current values.",
+   bench="HumanEval 56.1% | MBPP 54.2% | BabelCode-HumanEval C++ 42.2% | BabelCode-MBPP C++ 56.7% | "
+         "HumanEval single-line infill 68.25% | multi-line infill 20.05%",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/google/codegemma-7b-it model card evaluation table.  ||  "
+           "CORRECTION: an earlier revision said 'C++ NOT PUBLISHED'. That was WRONG. Google DOES publish "
+           "C++ figures, under BabelCode (BC HE C++ 42.2, BC MBPP C++ 56.7) rather than MultiPL-E - which "
+           "is why it was missed. BabelCode and MultiPL-E are different harnesses and the scores are NOT "
+           "directly comparable; flag this if a reviewer compares 42.2 against Qwen's 75.6.  ||  "
+           "Multi-line infill 20.05% vs single-line 68.25% is a large gap worth noting for retry-patching use.",
    eng="llama.cpp, Ollama, vLLM",
    eng_s="llama.cpp: GGUF at huggingface.co/google/codegemma-7b-it-GGUF (official Google repo).  ||  "
          "Ollama: ollama.com/library/codegemma.  ||  vLLM: docs.vllm.ai (GemmaForCausalLM).",
-   vstat="Benchmarks: CHECK. Context 8K: VERIFIED - this is the disqualifier.",
+   vstat="VERIFIED 2026-08-10. C++ figures DO exist under BabelCode (42.2) - earlier NOT PUBLISHED was wrong. Context 8K confirmed disqualifier.",
  ),
  dict(
    n="Phi-3.5-mini 3.8B Instruct", n_s="huggingface.co/microsoft/Phi-3.5-mini-instruct - model card title",
@@ -302,9 +324,9 @@ M = [
    pb=3.8, p="3.8B dense",
    p_s="huggingface.co/microsoft/Phi-3.5-mini-instruct - model card 'Model Summary'; "
        "config.json: 32 layers, 32 heads, NO grouped-query attention.",
-   train="512 x NVIDIA H100-80GB, 10 days (Phi-3-mini figure)",
-   train_s="arxiv 2404.14219 - training section. NOTE this figure is for Phi-3-mini; the 3.5 refresh "
-           "may differ. CHECK.",
+   train="512 x NVIDIA H100-80GB, 10 days",
+   train_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/Phi-3.5-mini-instruct model card, "
+           "'Training' section: 512 H100-80G GPUs for 10 days.",
    ly=32, kvh=32, hd=96, ctx="131,072",
    ctx_s="huggingface.co/microsoft/Phi-3.5-mini-instruct - config.json max_position_embeddings = 131072 "
          "with LongRoPE scaling. WARNING: no GQA means the KV cache is unusually large at long context - "
@@ -314,22 +336,25 @@ M = [
    sec="Code generation; mathematical reasoning; long-context retrieval",
    sec_s="Model card evaluation tables cover code, math and long-context (RULER, RepoQA) benchmarks.",
    bench="HumanEval 62.8% | MMLU 69.0% | GSM8K 86.2%",
-   bench_s="huggingface.co/microsoft/Phi-3.5-mini-instruct - model card evaluation tables. The 3.5 "
-           "refresh is documented on the card rather than in a separate paper. CHECK current values.",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/microsoft/Phi-3.5-mini-instruct model card: "
+           "HumanEval 62.8 (0-shot), MMLU 69 (5-shot), GSM8K 86.2 (8-shot CoT). The 3.5 refresh is "
+           "documented on the card rather than in a separate paper, so the card is the primary source.",
    eng="llama.cpp, ONNX Runtime, Ollama, vLLM, MLX",
    eng_s="ONNX: huggingface.co/microsoft/Phi-3.5-mini-instruct-onnx (official Microsoft repo, includes "
          "INT4 builds for CPU and DirectML).  ||  llama.cpp: GGUF community builds.  ||  "
          "Ollama: ollama.com/library/phi3.5.",
-   vstat="Benchmarks + training HW: CHECK. Licence/params/context: VERIFIED.",
+   vstat="VERIFIED 2026-08-10. All benchmarks and training HW confirmed against the model card.",
  ),
  dict(
    n="Llama 3.2 3B Instruct", n_s="huggingface.co/meta-llama/Llama-3.2-3B-Instruct - model card title",
    lic="Llama 3.2 Community License", lic_s="huggingface.co/meta-llama/Llama-3.2-3B-Instruct/blob/main/LICENSE",
-   tier="FULL", ctry=LLAMA_OK + " ADDITIONAL RESTRICTION: the Llama 3.2 licence excludes use by "
-        "individuals or companies domiciled in the EU for the multimodal models. VERIFY whether this "
-        "clause affects the text-only 3B before shipping in Europe. Origin: United States (Meta).",
-   ctry_s=LLAMA_SRC + "  ||  EU restriction: Llama 3.2 licence Acceptable Use / territory clause. "
-          "THIS IS A REAL AND UNUSUAL CLAUSE - have legal read it directly, do not rely on this summary.",
+   tier="FULL", ctry=LLAMA_OK + " EU CLAUSE DOES NOT APPLY TO THIS MODEL. The Llama 3.2 EU territorial "
+        "exclusion is scoped to MULTIMODAL models only; this is a text-only model and is unaffected. "
+        "Origin: United States (Meta).",
+   ctry_s=LLAMA_SRC + "  ||  VERIFIED 2026-08-10 against huggingface.co/meta-llama/Llama-3.2-3B-Instruct: "
+          "the EU restriction is expressly limited to multimodal models. This text-only 3B is NOT "
+          "restricted.  ||  CORRECTION: an earlier revision of this sheet flagged an EU concern on this "
+          "model. That was over-cautious and is withdrawn.",
    pb=3.2, p="3.21B dense",
    p_s="huggingface.co/meta-llama/Llama-3.2-3B-Instruct - model card 'Model Information'; config.json: "
        "28 layers, 8 KV heads (GQA), head_dim 128. Distilled from Llama 3.1 8B and 70B.",
@@ -343,14 +368,17 @@ M = [
    sec="Code generation; summarization; tool calling; the only text SLM here viable on Cortex-A53",
    sec_s="Meta blog names summarization, instruction following and rewriting as the target on-device tasks. "
          "Edge viability at Q4 is a CALC from the 1.9 GB file size against the S50 memory budget.",
-   bench="HumanEval 57.8% | MMLU 63.4% | GSM8K 77.7%",
-   bench_s="ai.meta.com/blog/llama-3-2-connect-2024-edge-mobile-devices/ and the HuggingFace model card "
-           "evaluation table. No arXiv paper for 3.2. CHECK current values.",
+   bench="MMLU 63.4% (macro avg) | GSM8K 77.7% (8-shot CoT) | HumanEval NOT PUBLISHED",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/meta-llama/Llama-3.2-3B-Instruct model card.  ||  "
+           "CORRECTION: an earlier revision listed HumanEval 57.8%. Meta does NOT publish a HumanEval "
+           "figure for the 3B on the model card. That number has been REMOVED as unsourced. Do not "
+           "reinstate it without a primary citation.  ||  Consequence: this model's code ability is "
+           "UNMEASURED. It is an edge-deployment candidate on size grounds only.",
    eng="llama.cpp (aarch64 NEON), ONNX Runtime, MLC-LLM, Ollama, ExecuTorch",
    eng_s="ExecuTorch: pytorch.org/executorch - Meta's own on-device runtime, Llama 3.2 is the reference "
          "example.  ||  llama.cpp: aarch64 NEON path documented in docs/build.md.  ||  "
          "MLC-LLM: llm.mlc.ai model library.",
-   vstat="EU licence clause: MUST BE VERIFIED BY LEGAL. Benchmarks: CHECK.",
+   vstat="VERIFIED 2026-08-10. EU clause does NOT apply (text-only). HumanEval 57.8 REMOVED as unsourced - code ability unmeasured.",
  ),
  dict(
    n="Mistral 7B Instruct v0.3", n_s="huggingface.co/mistralai/Mistral-7B-Instruct-v0.3 - model card title",
@@ -490,9 +518,16 @@ M = [
    tier="FULL", ctry=LLAMA_OK + " CRITICAL: the Llama 3.2 licence explicitly EXCLUDES use of the "
         "MULTIMODAL models by individuals or companies domiciled in the EU. This model is multimodal. "
         "If ipoefgfefs ships in Europe this is a hard blocker. Origin: United States (Meta).",
-   ctry_s=LLAMA_SRC + "  ||  EU multimodal exclusion: stated in the Llama 3.2 licence / Acceptable Use "
-          "Policy. THIS IS THE SINGLE MOST IMPORTANT LEGAL LINE IN THIS SHEET - have counsel read the "
-          "licence text directly.",
+   ctry_s=LLAMA_SRC + "  ||  VERIFIED 2026-08-10, EXACT LICENCE WORDING: 'With respect to any multimodal "
+          "models included in Llama 3.2, the rights granted under Section 1(a) of the Llama 3.2 Community "
+          "License Agreement are not being granted to you if you are an individual domiciled in, or a "
+          "company with a principal place of business in, the European Union.'  ||  CRITICAL EXCEPTION, "
+          "also verbatim: 'This restriction does not apply to end users of a product or service that "
+          "incorporates any such multimodal models.'  ||  PRACTICAL READING for ipoefgfefs: if the "
+          "developing entity's principal place of business is outside the EU, the model may be used and "
+          "the resulting product MAY be supplied to EU end users. If the developing entity is EU-domiciled, "
+          "it is blocked. This turns on where ipo's contracting entity sits - a question for counsel, "
+          "not for this sheet.",
    pb=10.6, p="10.6B dense (8B text base + vision adapter)",
    p_s="huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct - model card; the vision adapter uses "
        "cross-attention layers into a frozen Llama 3.1 8B text model.",
@@ -513,7 +548,7 @@ M = [
    eng_s="vLLM: docs.vllm.ai multimodal list (MllamaForConditionalGeneration).  ||  "
          "llama.cpp: cross-attention vision architecture is NOT fully supported - VERIFY before "
          "assuming a GGUF path exists.",
-   vstat="EU MULTIMODAL EXCLUSION - MUST BE VERIFIED BY LEGAL BEFORE ANY EU DEPLOYMENT.",
+   vstat="EU MULTIMODAL EXCLUSION VERIFIED VERBATIM 2026-08-10. Blocks EU-DOMICILED DEVELOPERS, not EU end users. Turns on where ipo contracts from - LEGAL DECISION.",
  ),
  dict(
    n="InternVL2 8B", n_s="huggingface.co/OpenGVLab/InternVL2-8B - model card title",
@@ -860,6 +895,58 @@ for t_ in [
  "  question - see NDAA Section 889, acquisition.gov/far/52.204-25 - and is a decision for legal and",
  "  contracts, not a technical filter. Both facts are stated in the Countries OK column; neither is",
  "  presented as overriding the other.",
+]:
+    r = line(r, t_)
+
+r += 1
+r = blk(r, "CORRECTIONS LOG - VERIFICATION PASS 2026-08-10", fill=BAD)
+for t_ in [
+ "Nine models were checked directly against their primary sources. SIX material errors were found in the",
+ "previous revision of this sheet and are corrected above. They are logged here rather than quietly fixed,",
+ "because two of them change the ranking.",
+ "",
+ "  1. Granite 3.3 8B HumanEval:  67.1%  ->  89.73%     [source: IBM model card, Evaluation Results table]",
+ "     IMPACT: HIGH. Granite now has the HIGHEST HumanEval in this sheet, above Qwen2.5-Coder's 88.4%.",
+ "     It is US-origin, Apache 2.0, has FIM and 128K context. It was ranked 3rd on a wrong number.",
+ "",
+ "  2. Qwen2.5-Coder 7B MultiPL-E C++:  63.4%  ->  75.6%   [source: arxiv 2409.12186 Table 17]",
+ "     IMPACT: MEDIUM. Understated. Strengthens the existing rank-1 case rather than changing it.",
+ "",
+ "  3. DeepSeek-Coder-V2-Lite MultiPL-E C++:  56.5%  ->  75.8%   [source: arxiv 2406.11931 Table 3]",
+ "     IMPACT: HIGH. This is now the highest MEASURED C++ score in the sheet, marginally above Qwen.",
+ "     Offset by a restrictive custom licence and immature MoE tooling in llama.cpp.",
+ "",
+ "  4. CodeGemma 7B C++:  'NOT PUBLISHED'  ->  BabelCode-HumanEval C++ 42.2%, BabelCode-MBPP C++ 56.7%",
+ "     [source: Google model card]. IMPACT: LOW - the model is already eliminated by its 8K context.",
+ "     Root cause: Google reports C++ under BabelCode, not MultiPL-E, so a MultiPL-E search missed it.",
+ "     NOTE: BabelCode and MultiPL-E are different harnesses. 42.2 is NOT comparable to Qwen's 75.6.",
+ "",
+ "  5. Phi-4 GSM8K 91.5%:  REMOVED as unsourced.   [Microsoft publishes MGSM 80.6%, not GSM8K]",
+ "     IMPACT: LOW. Phi-4's case rests on HumanEval 82.6 and MMLU 84.8, both confirmed.",
+ "",
+ "  6. Llama 3.2 3B HumanEval 57.8%:  REMOVED as unsourced.   [Meta publishes no HumanEval for the 3B]",
+ "     IMPACT: MEDIUM. The edge candidate's code ability is UNMEASURED. It qualifies on size, not skill.",
+ "",
+ "TWO LICENCE FINDINGS, both narrower than previously stated:",
+ "",
+ "  7. Llama 3.2 EU exclusion applies to MULTIMODAL models ONLY. The text-only 3B is unaffected -",
+ "     the previous flag on it is WITHDRAWN as over-cautious.",
+ "  8. For the 11B Vision, the exclusion binds EU-DOMICILED DEVELOPERS, and expressly does NOT bind",
+ "     end users of a product incorporating the model. A non-EU entity may build with it and supply",
+ "     EU customers. Exact licence wording is quoted in that model's Countries - SOURCE cell.",
+ "",
+ "CONFIRMED CORRECT, no change: Phi-4 (HumanEval 82.6, MMLU 84.8, MATH 80.4, 1920xH100 for 21 days),",
+ "Phi-3.5-mini (62.8 / 69 / 86.2, 512xH100 for 10 days), Llama 3.1 8B (HumanEval 72.6, GSM8K 84.5,",
+ "1.46M GPU-hours), Granite MMLU 65.54 and GSM8K 80.89, Qwen HumanEval 88.4 and MBPP 83.5,",
+ "DeepSeek HumanEval 81.1 and MBPP+ 68.8, Llama 3.2 3B MMLU 63.4 and GSM8K 77.7.",
+ "",
+ "ONE DISAMBIGUATION: Llama 3.1 8B MMLU is 69.4% standard 5-shot; the 73.0% previously quoted is the",
+ "chain-of-thought variant. Both are now shown so it is not compared unfairly against standard-metric models.",
+ "",
+ "STILL UNVERIFIED - the remaining CHECK cells:",
+ "  StarCoder2 15B (paper HTML would not yield the MultiPL-E table - needs the PDF read manually),",
+ "  Mistral 7B, Gemma 3 4B, DeepSeek-R1-Distill-14B, and all seven vision models except where noted.",
+ "  These are lower-stakes: none of them is in the shortlist.",
 ]:
     r = line(r, t_)
 
