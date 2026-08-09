@@ -92,11 +92,31 @@ REFS = [
     ("model_cards", "moondream2.html",               "https://huggingface.co/vikhyatk/moondream2"),
     ("model_cards", "mistral_7b_instruct_v03.html",  "https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3"),
 
+    # ---- category 4 and 5 embedding models ----
+    ("papers", "qwen3_vl_embedding_2601.04720.pdf",  "https://arxiv.org/pdf/2601.04720"),
+    ("papers", "vlm2vec_v2_2507.04590.pdf",          "https://arxiv.org/pdf/2507.04590"),
+    ("papers", "vlm2vec_mmeb_2410.05160.pdf",        "https://arxiv.org/pdf/2410.05160"),
+    ("papers", "gme_2412.16855.pdf",                 "https://arxiv.org/pdf/2412.16855"),
+    ("papers", "colpali_2407.01449.pdf",             "https://arxiv.org/pdf/2407.01449"),
+    ("papers", "e5v_2407.12580.pdf",                 "https://arxiv.org/pdf/2407.12580"),
+
+    ("model_cards", "qwen3_vl_embedding_8b.html",    "https://huggingface.co/Qwen/Qwen3-VL-Embedding-8B"),
+    ("model_cards", "qwen3_vl_embedding_2b.html",    "https://huggingface.co/Qwen/Qwen3-VL-Embedding-2B"),
+    ("model_cards", "gme_qwen2vl_7b.html",           "https://huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct"),
+    ("model_cards", "gme_qwen2vl_2b.html",           "https://huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct"),
+    ("model_cards", "vlm2vec_full.html",             "https://huggingface.co/TIGER-Lab/VLM2Vec-Full"),
+    ("model_cards", "colqwen2_v1.html",              "https://huggingface.co/vidore/colqwen2-v1.0"),
+    ("model_cards", "colpali_v1.2.html",             "https://huggingface.co/vidore/colpali-v1.2"),
+    ("model_cards", "e5_v.html",                     "https://huggingface.co/royokong/e5-v"),
+
     # ---- blogs and vendor docs ----
     ("blogs", "llava_next_blog.html",                "https://llava-vl.github.io/blog/2024-01-30-llava-next/"),
     ("blogs", "qwen25_coder_family_blog.html",       "https://qwenlm.github.io/blog/qwen2.5-coder-family/"),
     ("blogs", "codegemma_docs.html",                 "https://ai.google.dev/gemma/docs/codegemma"),
     ("blogs", "internvl_site.html",                  "https://internvl.github.io/"),
+    ("blogs", "vlm2vec_project_page.html",           "https://tiger-ai-lab.github.io/VLM2Vec/"),
+    ("blogs", "qwen3_vl_embedding_repo.html",        "https://github.com/QwenLM/Qwen3-VL-Embedding"),
+    ("blogs", "colpali_repo.html",                   "https://github.com/illuin-tech/colpali"),
 
     # ---- token rate measurements. only source that exists for tok/s ----
     ("tokrate", "mustafa_tokens_per_sec.html",       "https://mustafa.net/llm-tokens-per-second-benchmarks/"),

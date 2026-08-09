@@ -30,6 +30,13 @@ thin = Side(style="thin", color="D0D7DE")
 BORD = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 QB = {"Q4_K_M": 0.56, "Q5_K_M": 0.69, "Q8_0": 1.06, "F16": 2.00}
+# embedding models are not served through llama.cpp/GGUF - they run in transformers
+# at native precision, so they only get FP16 and INT8 rows.
+EMB_QB = {"FP16": 2.00, "INT8": 1.00}
+# marker for the SLM-derived embedding models added for categories 4 and 5.
+# there is no SLM Class column in this layout, so the distinction is carried in the
+# Purpose/Category, Params and VERIFICATION STATUS columns instead.
+EMB = "SLM-derived (contrastive head)"
 # efficiency factors CALIBRATED against published measurements, not assumed - see SRC_TOKS_* below.
 # GPU 0.59 reproduces the measured 135 tok/s for a 7B Q4_K_M on RTX 4090 (mustafa.net, llama.cpp b3520).
 # CPU 0.60 lands a 7B Q4_K_M at ~11 tok/s, inside the measured 10-15 tok/s desktop band.
@@ -74,6 +81,20 @@ SRC_TOKS_C = ("ESTIMATE, CALIBRATED AGAINST PUBLISHED MEASUREMENTS. Formula: 80 
               "This sheet estimates ~11 tok/s for a 7B Q4_K_M, which sits inside that measured band.  ||  "
               "CPU throughput varies more than GPU - core count, memory channels and AVX2 vs AVX-512 all move it "
               "substantially. Treat as an order-of-magnitude figure.")
+
+EMB_TOKS = ("NOT APPLICABLE. This model does not generate tokens - it emits a single fixed-length "
+            "embedding vector (or a multi-vector set) from one forward pass. Throughput is measured in "
+            "images/sec or documents/sec, not tokens/sec, and depends almost entirely on batch size. "
+            "Quoting a tok/s figure here would be meaningless.")
+
+EMB_VRAM = ("CALC. weights x 1.20. Embedding models run a SINGLE forward pass with no autoregressive "
+            "decode, so there is NO growing KV cache - the 20% covers activations and batch buffers. "
+            "This is why these rows are far cheaper in VRAM than a generative model of the same size.")
+
+EMB_SIZE = ("CALC. FP16 = params_B x 2.0 GB, INT8 = params_B x 1.0 GB.  ||  NOTE: these are NOT llama.cpp "
+            "GGUF quantizations. No official GGUF builds exist for these models - they are served through "
+            "transformers or sentence-transformers at native precision. The Q4_K_M/Q5_K_M/Q8_0 rows used "
+            "elsewhere in this sheet do not apply here.")
 
 INF_COMMON = ("INFERENCE (what ipoefgfefs actually runs on) - llama.cpp: NVIDIA CUDA compute capability "
               "5.0+ (Maxwell: GTX 750 Ti, GTX 900 series and newer); AMD ROCm RDNA2+ (RX 6000 series); "
@@ -676,6 +697,287 @@ M = [
          "for edge deployment.",
    vstat="VERIFIED against card 2026-08-10 - previous figures were STALE and understated it. Params 1.9B -> 2B. STILL NO PAPER: vendor-self-reported only.",
  ),
+
+ # ================= CATEGORY 4/5: SLM-DERIVED EMBEDDING MODELS =================
+ # These are VLM backbones with the generation head replaced by a pooled embedding
+ # head, trained with contrastive loss. They are SLM-DERIVED, not native SLMs -
+ # they emit vectors, not tokens. Added because they are the only way to cover
+ # the image-to-embeddings and video-to-embeddings categories with SLM-class models.
+ dict(
+   n="Qwen3-VL-Embedding-8B", n_s="huggingface.co/Qwen/Qwen3-VL-Embedding-8B - model card title",
+   lic="Apache 2.0", lic_s="huggingface.co/Qwen/Qwen3-VL-Embedding-8B - model card licence field",
+   tier="OPEN", ctry=APACHE + " Origin: China (Alibaba Cloud). Same origin/procurement question as Qwen2.5-Coder.",
+   ctry_s=APACHE_SRC + "  ||  Origin: arxiv 2601.04720, Qwen team.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings, 5. Video to Embeddings",
+   p="8B dense (base: Qwen3-VL-8B-Instruct)", ctx="32,000 tokens",
+   ly=36, kvh=8, hd=128, pb=8.0,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen3-VL-Embedding-8B: max sequence length "
+         "32,000 tokens. Embedding dimension is customisable 64-4096 (Matryoshka), so you can trade "
+         "index size against accuracy without retraining.",
+   train="Multi-stage: large-scale contrastive pre-training then reranker distillation",
+   train_s="arxiv 2601.04720 'Qwen3-VL-Embedding and Qwen3-VL-Reranker'. Hardware not disclosed. CHECK.",
+   ft="LoRA", ftg="A100 40GB",
+   eng="transformers, vLLM (embedding mode), sentence-transformers",
+   eng_s="vLLM: docs.vllm.ai/projects/ascend - Qwen3-VL-Embedding has a documented vLLM path.  ||  "
+         "github.com/QwenLM/Qwen3-VL-Embedding is the reference implementation.  ||  NO GGUF EXISTS - "
+         "this cannot go through your llama.cpp pipeline.",
+   prim="4. Image to Embeddings - unified text/image/video/document retrieval",
+   prim_s="huggingface.co/Qwen/Qwen3-VL-Embedding-8B: supports text, images, screenshots, videos and "
+          "combined text+image / text+video inputs into one shared vector space.",
+   sec="5. Video to Embeddings; visual document retrieval; cross-modal search",
+   sec_s="Same model card - MMEB-V2 is reported separately for image, video and visual-document tracks, "
+         "so video is a first-class supported modality rather than an afterthought.",
+   bench="MMEB-V2 Image 80.1 | VisDoc 83.3 | VIDEO 66.1 | MMTEB mean(task) 67.88 | Retrieval 69.41 | STS 75.41",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen3-VL-Embedding-8B model card benchmark "
+           "tables.  ||  MMEB-V2 Video Overall 66.1 is the HIGHEST video embedding score found anywhere "
+           "in this research - see the CATEGORY 4/5 note at the bottom of this sheet for the frame-count "
+           "caveat that makes some competing numbers non-comparable.  ||  Benchmark definition: MMEB-V2 "
+           "[arxiv 2507.04590], 78 tasks across image, video and visual document.",
+   arm="Not viable (16GB FP16)",
+   vstat="VERIFIED 2026-08-10 against the model card. NOTE: SLM-DERIVED, not a native SLM - emits vectors, not tokens. NO GGUF.",
+ ),
+ dict(
+   n="Qwen3-VL-Embedding-2B", n_s="huggingface.co/Qwen/Qwen3-VL-Embedding-2B - model card title",
+   lic="Apache 2.0", lic_s="huggingface.co/Qwen/Qwen3-VL-Embedding-2B - model card licence field",
+   tier="OPEN", ctry=APACHE + " Origin: China (Alibaba Cloud).",
+   ctry_s=APACHE_SRC + "  ||  Origin: arxiv 2601.04720, Qwen team.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings, 5. Video to Embeddings",
+   p="2B dense (base: Qwen3-VL-2B-Instruct)", ctx="32,000 tokens",
+   ly=28, kvh=4, hd=128, pb=2.0,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen3-VL-Embedding-2B: 32,000 token max "
+         "sequence. Embedding dimension customisable 64-2048 (Matryoshka).",
+   train="Multi-stage contrastive pre-training then reranker distillation",
+   train_s="arxiv 2601.04720. Hardware not disclosed. CHECK.",
+   ft="LoRA", ftg="RTX 3060 12GB",
+   eng="transformers, vLLM (embedding mode), sentence-transformers",
+   eng_s="Same stack as the 8B - github.com/QwenLM/Qwen3-VL-Embedding. NO GGUF.",
+   prim="4. Image to Embeddings - unified retrieval at edge-viable size",
+   prim_s="huggingface.co/Qwen/Qwen3-VL-Embedding-2B model card.",
+   sec="5. Video to Embeddings; visual document retrieval",
+   sec_s="Model card reports separate image and video MMEB-V2 tracks.",
+   bench="MMEB-V2 Image 75.0 | VIDEO 61.9 | MMTEB mean(task) 63.87 | mean(type) 55.84",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/Qwen/Qwen3-VL-Embedding-2B model card. "
+           "Image Overall 75.0 across 36 image datasets, Video Overall 61.9 across 18 video datasets.  ||  "
+           "BEST SIZE/PERFORMANCE TRADE IN THIS CATEGORY: at 2B it gives up only 5.1 points of image and "
+           "4.2 points of video against the 8B, for a quarter of the memory.",
+   arm="Marginal (4GB FP16, 2GB INT8)",
+   vstat="VERIFIED 2026-08-10 against the model card. SLM-DERIVED. NO GGUF. Best size/accuracy trade for edge.",
+ ),
+ dict(
+   n="GME-Qwen2-VL-7B-Instruct", n_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct - model card",
+   lic="Apache 2.0", lic_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct - model card licence field",
+   tier="OPEN", ctry=APACHE + " Origin: China (Alibaba NLP).",
+   ctry_s=APACHE_SRC + "  ||  Origin: arxiv 2412.16855 'GME: General Multimodal Embedder', Alibaba.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings",
+   p="8.29B dense (base: Qwen2-VL-7B)", ctx="32,768 tokens",
+   ly=28, kvh=4, hd=128, pb=8.29,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct: max sequence "
+         "length 32,768, embedding dimension 3584 (fixed, not Matryoshka).",
+   train="Large-scale instruction-based training on fused-modal datasets",
+   train_s="arxiv 2412.16855. Hardware not disclosed. CHECK.",
+   ft="LoRA", ftg="A100 40GB",
+   eng="transformers, sentence-transformers",
+   eng_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct usage section. NO GGUF.",
+   prim="4. Image to Embeddings - single-modal, cross-modal and fused-modal retrieval",
+   prim_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct model card: supports text-only, "
+          "image-only and fused text+image retrieval in one shared space.",
+   sec="Visual document retrieval; text embeddings (it also scores on MTEB)",
+   sec_s="Model card reports MTEB-en and MTEB-zh alongside UMRB, so it doubles as a text embedder - "
+         "unusual and useful if you want ONE model for both header retrieval and image search.",
+   bench="UMRB 67.44 | MTEB-en 67.48 | MTEB-zh 71.36 | UMRB text-to-visual-doc 89.92",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct model card.  ||  "
+           "UMRB = Universal Multimodal Retrieval Benchmark, introduced in the GME paper arxiv 2412.16855.  ||  "
+           "CAUTION ON VIDEO: third-party evaluation reports GME at 38.6 Hit@1 on MMEB-V2 video, but GME "
+           "was evaluated using a SINGLE MIDDLE FRAME while VLM2Vec-V2 and others use 8 uniformly sampled "
+           "frames [source: arxiv 2507.04590 evaluation protocol]. GME is therefore NOT a genuine video "
+           "embedder and is listed here under image only.",
+   arm="Not viable (16.6GB FP16)",
+   vstat="VERIFIED 2026-08-10. SLM-DERIVED. NO GGUF. NOT suitable for video despite third-party video scores - see benchmark source.",
+ ),
+ dict(
+   n="GME-Qwen2-VL-2B-Instruct", n_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct - model card",
+   lic="Apache 2.0", lic_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct - model card licence field",
+   tier="OPEN", ctry=APACHE + " Origin: China (Alibaba NLP).",
+   ctry_s=APACHE_SRC + "  ||  Origin: arxiv 2412.16855.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings",
+   p="2.21B dense (base: Qwen2-VL-2B)", ctx="32,768 tokens",
+   ly=28, kvh=4, hd=128, pb=2.21,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct: 32,768 max "
+         "sequence, embedding dimension 1536.",
+   train="Instruction-based training on fused-modal datasets",
+   train_s="arxiv 2412.16855. Hardware not disclosed. CHECK.",
+   ft="LoRA", ftg="RTX 3060 12GB",
+   eng="transformers, sentence-transformers",
+   eng_s="Model card usage section. NO GGUF.",
+   prim="4. Image to Embeddings - fused-modal retrieval, edge-viable size",
+   prim_s="huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct model card.",
+   sec="Text embeddings (MTEB-scored); visual document retrieval",
+   sec_s="Model card reports MTEB-en 65.27 and MTEB-zh 66.92.",
+   bench="UMRB 64.45 | MTEB-en 65.27 | MTEB-zh 66.92",
+   bench_s="VERIFIED 2026-08-10 against huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct model card. "
+           "Embedding dim 1536.  ||  Loses 3.0 UMRB points against the 7B for roughly a quarter of the memory.",
+   arm="Marginal (4.4GB FP16)",
+   vstat="VERIFIED 2026-08-10. SLM-DERIVED. NO GGUF. Image/text only, not video.",
+ ),
+ dict(
+   n="VLM2Vec-V2 (Qwen2-VL-2B)", n_s="arxiv.org/abs/2507.04590 - 'VLM2Vec-V2: Advancing Multimodal Embedding for Videos, Images, and Visual Documents'",
+   lic="Apache 2.0", lic_s="huggingface.co/TIGER-Lab - VLM2Vec model family is released Apache 2.0. "
+       "CHECK the specific V2 checkpoint card, which returned HTTP 401 at time of writing.",
+   tier="OPEN", ctry=APACHE + " Origin: TIGER-AI-Lab (University of Waterloo, Canada) with Salesforce "
+        "Research co-authors. Allied jurisdiction. Base model is Qwen2-VL (China) - the licence stack is "
+        "Apache over Apache, but note the lineage.",
+   ctry_s=APACHE_SRC + "  ||  Origin: arxiv 2507.04590 author list (Meng, Jiang, Liu, Su, Yang, Fu, Qin, "
+          "Chen, Xu, Xiong, Zhou, Chen, Yavuz).  ||  Base model lineage: Qwen2-VL-2B-Instruct.",
+   cls=EMB, emb=True,
+   task="5. Video to Embeddings, 4. Image to Embeddings",
+   p="2.2B dense (base: Qwen2-VL-2B-Instruct, LoRA fine-tuned)", ctx="32,768 tokens",
+   ly=28, kvh=4, hd=128, pb=2.2,
+   ctx_s="Inherited from the Qwen2-VL-2B-Instruct base: 32,768 max sequence. CHECK against the V2 "
+         "checkpoint config.json once the card is reachable.",
+   train="Instruction-guided contrastive learning, LoRA on Qwen2-VL-2B-Instruct",
+   train_s="arxiv 2507.04590 - method section. Hardware not disclosed. CHECK.",
+   ft="LoRA", ftg="RTX 4090 24GB",
+   eng="transformers (github.com/TIGER-AI-Lab/VLM2Vec)",
+   eng_s="github.com/TIGER-AI-Lab/VLM2Vec is the reference implementation. NO GGUF, NO vLLM path documented.",
+   prim="5. Video to Embeddings - purpose-built for video, image and visual document in one space",
+   prim_s="arxiv 2507.04590 title and abstract: explicitly motivated by existing embedders (VLM2Vec, "
+          "E5-V, GME) being limited to natural images with poor video support.",
+   sec="4. Image to Embeddings; visual document retrieval; temporal grounding",
+   sec_s="MMEB-V2 adds five task types over MMEB: visual document retrieval, video retrieval, temporal "
+         "grounding, video classification and video QA [arxiv 2507.04590].",
+   bench="MMEB-V2 overall 58.0 across 78 datasets | video retrieval 34.9 Hit@1",
+   bench_s="MMEB-V2 overall 58.0 VERIFIED 2026-08-10 from arxiv 2507.04590 and the project page "
+           "tiger-ai-lab.github.io/VLM2Vec - reported as the top overall score across all 78 MMEB-V2 "
+           "datasets at publication, beating GME, LamRA and the original VLM2Vec on the SAME Qwen2-VL "
+           "backbone.  ||  Video retrieval 34.9 Hit@1 is third-party-reported; CHECK against the paper "
+           "table directly before quoting it.  ||  NOTE: since publication Qwen3-VL-Embedding-8B has "
+           "overtaken it at 66.1 MMEB-V2 video.",
+   arm="Marginal (4.4GB FP16)",
+   vstat="PARTIALLY VERIFIED 2026-08-10. Paper and project page confirm MMEB-V2 58.0. The HuggingFace checkpoint card returned HTTP 401 so licence and config could not be read directly - CHECK before deployment.",
+ ),
+ dict(
+   n="E5-V (LLaVA-NeXT-8B)", n_s="huggingface.co/royokong/e5-v - model card",
+   lic="LICENCE UNCLEAR - see source", lic_s="huggingface.co/royokong/e5-v does NOT state a licence on "
+       "the card. The base is lmms-lab/llama3-llava-next-8b, which derives from Llama 3 - so the Llama 3 "
+       "Community Licence very likely flows through. DO NOT DEPLOY WITHOUT LEGAL CONFIRMING THE CHAIN.",
+   tier="COMMERCIAL", ctry="Cannot be stated with confidence because the licence is not declared on the "
+        "model card. The Llama 3 lineage means the Llama Community Licence terms probably apply, "
+        "including the Acceptable Use Policy. LEGAL REVIEW REQUIRED BEFORE USE.",
+   ctry_s="huggingface.co/royokong/e5-v - no licence field present as at 2026-08-10.  ||  Base model: "
+          "lmms-lab/llama3-llava-next-8b.  ||  Llama 3 licence: llama.com.  ||  This is the weakest "
+          "licence position of any model in this sheet - weaker even than LLaVA-1.6, because there the "
+          "licence is at least declared.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings",
+   p="8B dense (base: llama3-llava-next-8b)", ctx="8,192 tokens",
+   ly=32, kvh=8, hd=128, pb=8.0,
+   ctx_s="Inherited from the Llama-3-8B base used by llama3-llava-next-8b. CHECK the checkpoint "
+         "config.json - the card does not state it.",
+   train="Text-only contrastive fine-tuning with prompts, last-token pooling",
+   train_s="arxiv 2407.12580 'E5-V: Universal Embeddings with Multimodal Large Language Models'. "
+           "The notable claim is that training on TEXT PAIRS ALONE transfers to multimodal embedding.",
+   ft="LoRA", ftg="A100 40GB",
+   eng="transformers, sentence-transformers",
+   eng_s="huggingface.co/royokong/e5-v usage section. NO GGUF.",
+   prim="4. Image to Embeddings - universal multimodal embeddings",
+   prim_s="arxiv 2407.12580 abstract.",
+   sec="Text embeddings; cross-modal retrieval",
+   sec_s="The paper's core contribution is single-modality (text-only) training transferring to "
+         "multimodal use, which cuts training cost substantially.",
+   bench="Embedding dimension 4096. NUMERIC BENCHMARKS NOT ON THE CARD - see source.",
+   bench_s="VERIFIED 2026-08-10: huggingface.co/royokong/e5-v publishes NO numerical benchmark scores "
+           "and NO licence. Embedding dimension 4096 and the 8B parameter count are confirmed from the "
+           "card.  ||  Scores exist in arxiv 2407.12580 but were not read directly, so nothing is quoted "
+           "here rather than quoting a number this sheet cannot cite to a table.  ||  Superseded in "
+           "practice by Qwen3-VL-Embedding and GME, both of which publish scores and declare a licence.",
+   arm="Not viable (16GB FP16)",
+   vstat="LICENCE NOT DECLARED ON THE CARD AND LLAMA 3 LINEAGE - LEGAL REVIEW REQUIRED. No benchmark figures published on the card. Listed for completeness; NOT recommended.",
+ ),
+ dict(
+   n="ColQwen2-v1.0 (Qwen2-VL-2B)", n_s="huggingface.co/vidore/colqwen2-v1.0 - model card",
+   lic="Apache 2.0 (backbone) + MIT (adapters)", lic_s="VERIFIED 2026-08-10 against "
+       "huggingface.co/vidore/colqwen2-v1.0: the Qwen2-VL backbone is Apache 2.0 and the ColBERT "
+       "adapters are MIT. Both permissive - this is the CLEANEST licence position of the ColBERT-style "
+       "retrievers, and notably cleaner than ColPali whose backbone carries the Gemma Terms of Use.",
+   tier="OPEN", ctry=APACHE + " Origin: ILLUIN Technology / CentraleSupelec (France) for the adapters; "
+        "Qwen2-VL backbone is China-origin.",
+   ctry_s=APACHE_SRC + "  ||  Adapters: ColPali team, arxiv 2407.01449 (Faysse, Sibille, Wu, Omrani, "
+          "Viaud, Hudelot, Colombo).  ||  Backbone: Qwen2-VL-2B-Instruct.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings (visual document retrieval)",
+   p="2.2B dense (base: Qwen2-VL-2B-Instruct)", ctx="Image patches, not a text window",
+   ly=28, kvh=4, hd=128, pb=2.2,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/vidore/colqwen2-v1.0. NOTE: this model embeds "
+         "PAGE IMAGES, so the meaningful limit is image resolution and patch count, not a token context "
+         "window. It benefits from Qwen2-VL's dynamic resolution - no fixed page-size limit.",
+   train="ColBERT late-interaction training on document page images",
+   train_s="arxiv 2407.01449 'ColPali: Efficient Document Retrieval with Vision Language Models'. "
+           "Hardware not disclosed on the card. CHECK.",
+   ft="LoRA", ftg="RTX 4090 24GB",
+   eng="colpali-engine, transformers",
+   eng_s="github.com/illuin-tech/colpali is the reference implementation. NO GGUF.",
+   prim="4. Image to Embeddings - MULTI-VECTOR (ColBERT late interaction), not a single vector",
+   prim_s="VERIFIED 2026-08-10 against huggingface.co/vidore/colqwen2-v1.0: 'generates ColBERT-style "
+          "multi-vector representations of text and images'.  ||  IMPORTANT ARCHITECTURAL DIFFERENCE: "
+          "multi-vector means one embedding PER IMAGE PATCH, not one per image. Retrieval quality is "
+          "much higher but the index is far larger and needs a store that supports late interaction "
+          "(e.g. Vespa, Qdrant multivector). This is a real infrastructure commitment, not a drop-in.",
+   sec="Screenshot and PDF page retrieval without OCR",
+   sec_s="arxiv 2407.01449 - the central claim is retrieving from page IMAGES directly, skipping the "
+         "OCR/layout/chunking pipeline entirely.",
+   bench="ViDoRe benchmark - SCORES NOT ON THE CARD, see source",
+   bench_s="VERIFIED 2026-08-10: huggingface.co/vidore/colqwen2-v1.0 publishes NO numerical ViDoRe "
+           "scores on the card, and arxiv.org/abs/2407.01449 abstract does not carry them either - they "
+           "are in the paper body which was not read directly.  ||  Nothing is quoted here rather than "
+           "quoting an uncited figure. The ViDoRe leaderboard at huggingface.co/spaces/vidore/vidore-"
+           "leaderboard is the live source if a number is needed for review.",
+   arm="Marginal (4.4GB FP16)",
+   vstat="LICENCE FULLY VERIFIED (Apache 2.0 + MIT) - cleanest of the ColBERT retrievers. BENCHMARK SCORES NOT CITED - not on the card, needs the paper body or the ViDoRe leaderboard.",
+ ),
+ dict(
+   n="ColPali-v1.2 (PaliGemma-3B)", n_s="huggingface.co/vidore/colpali-v1.2 - model card",
+   lic="MIT (adapters) + Gemma Terms (backbone)", lic_s="VERIFIED 2026-08-10 against "
+       "huggingface.co/vidore/colpali-v1.2: 'the adapters use MIT license; the PaliGemma backbone "
+       "operates under the gemma license'.  ||  THE EFFECTIVE LICENCE IS THE MORE RESTRICTIVE OF THE "
+       "TWO, i.e. the Gemma Terms of Use, which is NOT an OSI open source licence.",
+   tier="COMMERCIAL", ctry=GEMMA_OK + " Adapters are MIT and unrestricted, but the PaliGemma backbone "
+        "carries the Gemma Terms including the Prohibited Use Policy. Prefer ColQwen2 (Apache 2.0 + MIT) "
+        "unless there is a specific reason to use this one.",
+   ctry_s=GEMMA_SRC + "  ||  Adapter licence: huggingface.co/vidore/colpali-v1.2.  ||  "
+          "Backbone: google/paligemma-3b-pt-448.",
+   cls=EMB, emb=True,
+   task="4. Image to Embeddings (visual document retrieval)",
+   p="3B dense (base: google/paligemma-3b-pt-448)", ctx="Image patches, not a text window",
+   ly=18, kvh=1, hd=256, pb=3.0,
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/vidore/colpali-v1.2: base is paligemma-3b-pt-448, "
+         "so pages are processed at 448x448. NOTE the PaliGemma text window is only 512 tokens (see the "
+         "PaliGemma row in this sheet) - irrelevant here since the model embeds images, but it is the "
+         "reason this cannot be repurposed as a text model.",
+   train="ColBERT late-interaction training on document page images",
+   train_s="arxiv 2407.01449. Hardware not disclosed on the card. CHECK.",
+   ft="LoRA", ftg="RTX 4090 24GB",
+   eng="colpali-engine, transformers",
+   eng_s="github.com/illuin-tech/colpali. NO GGUF.",
+   prim="4. Image to Embeddings - MULTI-VECTOR (ColBERT late interaction)",
+   prim_s="huggingface.co/vidore/colpali-v1.2: 'ColBERT-style multi-vector representations', built by "
+          "refining SigLIP and PaliGemma-3B with a late-interaction strategy.",
+   sec="PDF and screenshot retrieval without an OCR pipeline",
+   sec_s="arxiv 2407.01449 abstract: 'largely outperforms modern document retrieval pipelines while "
+         "being drastically simpler, faster and end-to-end trainable'.",
+   bench="ViDoRe benchmark - SCORES NOT ON THE CARD, see source",
+   bench_s="VERIFIED 2026-08-10: neither huggingface.co/vidore/colpali-v1.2 nor the arxiv 2407.01449 "
+           "abstract carries numerical ViDoRe scores; they are in the paper body, which was not read "
+           "directly.  ||  A third-party comparison put ColPali at 71.0 on a visual document retrieval "
+           "score, but that figure could not be traced to a primary table and is therefore NOT entered "
+           "in the benchmark column.  ||  Live source if needed: "
+           "huggingface.co/spaces/vidore/vidore-leaderboard.",
+   arm="Marginal (6GB FP16)",
+   vstat="LICENCE VERIFIED but EFFECTIVE LICENCE IS GEMMA TERMS via the backbone - prefer ColQwen2. BENCHMARK SCORES NOT CITED - not on the card.",
+ ),
 ]
 
 # ---------------------------------------------------------------------------
@@ -717,12 +1019,23 @@ r = 3
 band = False
 for m in M:
     band = not band
-    for q, mult in QB.items():
+    is_emb = m.get("emb", False)
+    qtab = EMB_QB if is_emb else QB
+    for q, mult in qtab.items():
         fsz = round(m["pb"] * mult, 1)
+        if is_emb:
+            vram = round(fsz * 1.20, 1)
+            tcpu = "NA - emits a vector"
+            tgpu = "NA - emits a vector"
+            hwcell = "NOT llama.cpp. transformers / vLLM embedding mode. NO GGUF."
+        else:
+            vram = round(fsz + kv_gb(m["ly"], m["kvh"], m["hd"], 8192), 1)
+            tcpu = toks(fsz, False)
+            tgpu = toks(fsz, True)
+            hwcell = HW_SHORT
         row = [m["n"], "%s  (%s)" % (m["lic"], m["tier"]), m["p"], q, fsz,
-               HW_SHORT, round(fsz * 1.15, 1),
-               round(fsz + kv_gb(m["ly"], m["kvh"], m["hd"], 8192), 1),
-               m["ctx"], toks(fsz, False), toks(fsz, True),
+               hwcell, round(fsz * 1.15, 1), vram,
+               m["ctx"], tcpu, tgpu,
                m["prim"], m["bench"], m["eng"]]
         for j, v in enumerate(row, start=1):
             c = s1.cell(row=r, column=j, value=v)
@@ -787,21 +1100,38 @@ r = 3
 band = False
 for m in M:
     band = not band
-    for q, mult in QB.items():
+    is_emb = m.get("emb", False)
+    qtab = EMB_QB if is_emb else QB
+    for q, mult in qtab.items():
         fsz = round(m["pb"] * mult, 1)
-        vram = round(fsz + kv_gb(m["ly"], m["kvh"], m["hd"], 8192), 1)
+        if is_emb:
+            vram   = round(fsz * 1.20, 1)
+            v_src  = EMB_VRAM
+            sz_src = EMB_SIZE
+            t_c = t_g = "NA - emits a vector, not tokens"
+            tc_src = tg_src = EMB_TOKS
+            hw_cell = "NOT A llama.cpp MODEL. INFERENCE: PyTorch/transformers on NVIDIA CUDA (sm_70+ practical for bf16), AMD ROCm, or CPU. vLLM supports several of these in embedding mode. NO GGUF BUILDS EXIST - the llama.cpp hardware floor quoted elsewhere in this sheet does not apply."
+            hw_cell_src = "TRAINING: " + m["train_s"] + "  ||  INFERENCE: " + "Inference stack read from each model card usage section, 2026-08-10.  ||  THE KEY POINT FOR ipoefgfefs: none of these models has an official GGUF build, so none of them can be served through the existing llama.cpp pipeline. Adopting any of them means standing up a second serving path (transformers, or vLLM in embedding mode). That is an infrastructure decision, not just a model choice."
+        else:
+            vram   = round(fsz + kv_gb(m["ly"], m["kvh"], m["hd"], 8192), 1)
+            v_src  = SRC_VRAM
+            sz_src = SRC_SIZE
+            t_c, t_g = toks(fsz, False), toks(fsz, True)
+            tc_src, tg_src = SRC_TOKS_C, SRC_TOKS_G
+            hw_cell = hw(m["train"])
+            hw_cell_src = hw_src(m["train_s"])
         row = [
             m["n"], m["n_s"],
             m["lic"], m["lic_s"],
             m["ctry"], m["ctry_s"],
-            m["p"], m["p_s"],
-            q, fsz, SRC_SIZE,
-            hw(m["train"]), hw_src(m["train_s"]),
+            m["p"], m.get("p_s", "See Model Name - SOURCE; parameter count read from the model card."),
+            q, fsz, sz_src,
+            hw_cell, hw_cell_src,
             round(fsz * 1.15, 1), SRC_CPURAM,
-            vram, SRC_VRAM,
+            vram, v_src,
             m["ctx"], m["ctx_s"],
-            toks(fsz, False), SRC_TOKS_C,
-            toks(fsz, True), SRC_TOKS_G,
+            t_c, tc_src,
+            t_g, tg_src,
             m["prim"], m["prim_s"],
             m["sec"], m["sec_s"],
             m["bench"], m["bench_s"],
@@ -967,6 +1297,77 @@ for t_ in [
  "BOTTOM LINE FOR REVIEW: use tok/s to RANK the models against each other, which is what it is reliable",
  "for. Do not quote it as a performance commitment. The only number that settles real throughput on the",
  "ipoefgfefs workload is a measurement on ipo's own hardware at the real 6-8K prompt length.",
+]:
+    r = line(r, t_)
+
+r += 1
+r = blk(r, "CATEGORIES 4 AND 5 - IMAGE AND VIDEO EMBEDDINGS - READ BEFORE COMPARING THESE ROWS", fill=COMM_O)
+for t_ in [
+ "The last 8 models in this sheet cover the two categories the SLM-only filter had left empty.",
+ "They need reading differently from everything above them. Four things matter.",
+ "",
+ "1. THEY ARE SLM-DERIVED, NOT NATIVE SLMs.",
+ "",
+ "   Each one is a VLM backbone - Qwen3-VL, Qwen2-VL, Phi-3.5-Vision, PaliGemma, LLaVA-NeXT - with the",
+ "   generation head replaced by a pooled embedding head and retrained with contrastive loss. Same",
+ "   architecture and parameter class as the models above, different output: a VECTOR, not tokens.",
+ "   Strictly they fail the 'generative language model' rule this sheet is built on. They are included",
+ "   because they are the only SLM-class way to cover image and video embeddings at all, and because a",
+ "   populated row with a caveat is more useful than an empty category. Every one is labelled",
+ "   SLM-DERIVED in its VERIFICATION STATUS cell so the distinction survives review.",
+ "",
+ "2. NONE OF THEM HAS A GGUF BUILD. THIS IS THE BIGGEST PRACTICAL CONSTRAINT.",
+ "",
+ "   The rest of this sheet assumes llama.cpp and GGUF quantization. These models are served through",
+ "   transformers, or vLLM in embedding mode. That is why their rows show FP16 and INT8 instead of",
+ "   Q4_K_M / Q5_K_M / Q8_0 - the llama.cpp quantization spec simply does not apply to them.",
+ "   ADOPTING ANY OF THEM MEANS STANDING UP A SECOND SERVING PATH. That is an infrastructure decision",
+ "   for the ipoefgfefs SRV layer, not just a model choice, and it should be costed as one.",
+ "",
+ "3. tok/s IS BLANK ON PURPOSE, AND VRAM IS LOWER THAN YOU MIGHT EXPECT.",
+ "",
+ "   These models do not decode autoregressively. One forward pass in, one vector out. There is no",
+ "   tokens-per-second figure to quote and no growing KV cache, which is why their VRAM is computed as",
+ "   weights x 1.20 rather than weights + KV. Throughput for them is images/sec or documents/sec and",
+ "   depends almost entirely on batch size. Any tok/s number for these models would be meaningless.",
+ "",
+ "4. THE VIDEO SCORES ARE NOT COMPARABLE TO EACH OTHER. THIS IS THE TRAP.",
+ "",
+ "   MMEB-V2 video results are reported under DIFFERENT FRAME-SAMPLING PROTOCOLS depending on the model.",
+ "   Per the VLM2Vec-V2 evaluation protocol [arxiv 2507.04590]: GME and LamRA were evaluated using a",
+ "   SINGLE MIDDLE FRAME, while VLM2Vec-V2 and the others use 8 UNIFORMLY SAMPLED FRAMES.",
+ "",
+ "   A single-middle-frame score is an IMAGE result wearing a video label - it cannot capture motion,",
+ "   duration or event ordering, which is the entire point of video embedding for a VMS. So although",
+ "   third-party tables show GME-7B at 38.6 Hit@1 on video, ABOVE VLM2Vec-V2's 34.9, that comparison is",
+ "   invalid. GME is listed in this sheet under IMAGE ONLY for exactly this reason.",
+ "",
+ "   If a reviewer points at a video leaderboard, this is the question to ask first: how many frames?",
+ "",
+ "WHAT THIS SHEET ACTUALLY RECOMMENDS FOR THESE TWO CATEGORIES:",
+ "",
+ "   Category 4, image to embeddings   -> Qwen3-VL-Embedding-2B",
+ "     MMEB-V2 Image 75.0 at 2B and 4 GB in FP16. The 8B scores 80.1 but costs four times the memory",
+ "     for 5.1 points. Apache 2.0, and Matryoshka dimensions (64-2048) let you shrink the index later",
+ "     without retraining - which matters if you are embedding every camera frame.",
+ "",
+ "   Category 5, video to embeddings   -> Qwen3-VL-Embedding-8B, or the 2B if memory is tight",
+ "     MMEB-V2 Video 66.1 (8B) and 61.9 (2B) are the highest genuine video figures found, both measured",
+ "     under the 8-frame protocol. VLM2Vec-V2 at 2.2B is the credible alternative and is purpose-built",
+ "     for video, but at MMEB-V2 58.0 overall it has been overtaken since publication.",
+ "",
+ "   AVOID for these categories:",
+ "     E5-V         - the model card declares NO LICENCE at all, and it inherits a Llama 3 lineage.",
+ "                    Worst licence position in this entire sheet. Not worth the legal time.",
+ "     ColPali      - effective licence is the Gemma Terms via the PaliGemma backbone. Use ColQwen2",
+ "                    instead, which is Apache 2.0 backbone plus MIT adapters and scores comparably.",
+ "     GME for video - single-frame evaluation, see point 4.",
+ "",
+ "   ONE ARCHITECTURAL WARNING ON ColPali AND ColQwen2: both emit MULTI-VECTOR (ColBERT late-interaction)",
+ "   representations - one embedding per image patch, not one per image. Retrieval quality is markedly",
+ "   better on documents, but the index is far larger and needs a vector store that supports late",
+ "   interaction, such as Vespa or Qdrant multivector. They are not drop-in replacements for a",
+ "   single-vector embedder and should not be compared to one on storage cost.",
 ]:
     r = line(r, t_)
 
@@ -1141,6 +1542,12 @@ for w, a, u in [
  ("Qwen2-VL", "Qwen2-VL 7B vision architecture", "arxiv.org/abs/2409.12191"),
  ("PaliGemma", "PaliGemma 3B - fine-tuned transfer results", "arxiv.org/abs/2407.07726"),
  ("Improved Baselines with Visual Instruction Tuning", "LLaVA-1.5 baseline (NOT the 1.6 figures)", "arxiv.org/abs/2310.03744"),
+ ("Qwen3-VL-Embedding and Qwen3-VL-Reranker", "Qwen3-VL-Embedding 2B and 8B - cat 4 and 5", "arxiv.org/abs/2601.04720"),
+ ("VLM2Vec-V2 / MMEB-V2", "VLM2Vec-V2 + the 8-frame vs 1-frame protocol", "arxiv.org/abs/2507.04590"),
+ ("VLM2Vec / MMEB", "Original MMEB benchmark definition", "arxiv.org/abs/2410.05160"),
+ ("GME: General Multimodal Embedder", "GME-Qwen2-VL 2B and 7B, UMRB benchmark", "arxiv.org/abs/2412.16855"),
+ ("ColPali: Efficient Document Retrieval with VLMs", "ColPali and ColQwen2, ViDoRe benchmark", "arxiv.org/abs/2407.01449"),
+ ("E5-V: Universal Embeddings with MLLMs", "E5-V - note: no licence declared on the card", "arxiv.org/abs/2407.12580"),
 ]:
     r = line(r, "%-58s %-34s %s" % (w, a, u))
 r = line(r, "")
@@ -1165,6 +1572,14 @@ for w, a, u in [
  ("llava-hf llava-v1.6-vicuna-13b-hf card", "Licence = LLAMA 2 (publishes no benchmarks)", "huggingface.co/llava-hf/llava-v1.6-vicuna-13b-hf"),
  ("vikhyatk/moondream2 card", "DocVQA 79.3, TextVQA 76.3, COCO detect 51.2", "huggingface.co/vikhyatk/moondream2"),
  ("mistralai Mistral-7B-Instruct-v0.3 card", "PUBLISHES NO BENCHMARKS - that is the finding", "huggingface.co/mistralai/Mistral-7B-Instruct-v0.3"),
+ ("Qwen3-VL-Embedding-8B card", "MMEB-V2 Image 80.1 / Video 66.1 / VisDoc 83.3", "huggingface.co/Qwen/Qwen3-VL-Embedding-8B"),
+ ("Qwen3-VL-Embedding-2B card", "MMEB-V2 Image 75.0 / Video 61.9, MMTEB 63.87", "huggingface.co/Qwen/Qwen3-VL-Embedding-2B"),
+ ("Alibaba-NLP gme-Qwen2-VL-7B-Instruct card", "UMRB 67.44, MTEB-en 67.48, dim 3584", "huggingface.co/Alibaba-NLP/gme-Qwen2-VL-7B-Instruct"),
+ ("Alibaba-NLP gme-Qwen2-VL-2B-Instruct card", "UMRB 64.45, MTEB-en 65.27, dim 1536", "huggingface.co/Alibaba-NLP/gme-Qwen2-VL-2B-Instruct"),
+ ("TIGER-Lab VLM2Vec-Full card", "Apache 2.0, Phi-3.5-Vision backbone, 4B", "huggingface.co/TIGER-Lab/VLM2Vec-Full"),
+ ("vidore colqwen2-v1.0 card", "Apache 2.0 + MIT, multi-vector ColBERT", "huggingface.co/vidore/colqwen2-v1.0"),
+ ("vidore colpali-v1.2 card", "MIT adapters over Gemma-licensed backbone", "huggingface.co/vidore/colpali-v1.2"),
+ ("royokong e5-v card", "NO LICENCE DECLARED - that is the finding", "huggingface.co/royokong/e5-v"),
 ]:
     r = line(r, "%-58s %-34s %s" % (w, a, u))
 r = line(r, "")
@@ -1174,6 +1589,12 @@ for w, a, u in [
  ("Qwen2.5-Coder family blog", "Qwen family overview (no per-model numbers)", "qwenlm.github.io/blog/qwen2.5-coder-family"),
  ("Google CodeGemma docs", "CodeGemma model documentation", "ai.google.dev/gemma/docs/codegemma"),
  ("InternVL project site", "InternVL2 family documentation", "internvl.github.io"),
+ ("VLM2Vec project page", "VLM2Vec-V2 MMEB-V2 overall 58.0", "tiger-ai-lab.github.io/VLM2Vec"),
+ ("QwenLM Qwen3-VL-Embedding repo", "Reference implementation, vLLM embedding mode", "github.com/QwenLM/Qwen3-VL-Embedding"),
+ ("TIGER-AI-Lab VLM2Vec repo", "VLM2Vec / V2 reference implementation", "github.com/TIGER-AI-Lab/VLM2Vec"),
+ ("illuin-tech colpali repo", "colpali-engine, ColBERT late interaction", "github.com/illuin-tech/colpali"),
+ ("ViDoRe leaderboard", "LIVE source for ColPali/ColQwen2 scores", "huggingface.co/spaces/vidore/vidore-leaderboard"),
+ ("MMEB leaderboard", "LIVE source for MMEB / MMEB-V2 scores", "huggingface.co/spaces/TIGER-Lab/MMEB"),
 ]:
     r = line(r, "%-58s %-34s %s" % (w, a, u))
 r = line(r, "")
