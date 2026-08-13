@@ -15,7 +15,7 @@ A language model under ~20B parameters, designed to run on a single GPU or CPU s
 **LLM (Large Language Model)**
 A language model above ~70B parameters, usually requiring multi-GPU infra or cloud API.
 - *ipoefgfefs:* Llama 3.3 70B — only viable on 2×A100 server, used for highest-accuracy code if infra allows.
-- *Real world:* GPT-4, Claude Opus — cloud-hosted, too large for on-prem single GPU.
+- *Real world:* GPT-4, Gemini Ultra — cloud-hosted, too large for on-prem single GPU.
 
 **Base Model**
 A model trained on raw text/code data only, with no instruction-following training.
