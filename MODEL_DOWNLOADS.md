@@ -96,6 +96,69 @@ If embeddings run alongside code generation, the 2B is the practical choice.
 
 ---
 
+## Lightweight code models - under 4B
+
+For the camera, for low-VRAM boxes, and as draft models. All of these fit in
+under 2 GB at Q4_K_M, and the small Qwen variants are far stronger than their
+size suggests.
+
+Scores below are from the Qwen2.5-Coder technical report, arxiv 2409.12186 -
+HumanEval and MBPP from Table 16, MultiPL-E C++ from Table 17. StarCoder2 C++
+is from arxiv 2402.19173 Table 10.
+
+| Model | Params | Q4_K_M | MultiPL-E C++ | HumanEval | Repo | Filename |
+|---|---|---|---|---|---|---|
+| **Qwen2.5-Coder 3B** | 3B | ~1.9 GB | **68.3%** | **84.1%** | [Qwen/Qwen2.5-Coder-3B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF) | `qwen2.5-coder-3b-instruct-q4_k_m.gguf` |
+| **Qwen2.5-Coder 1.5B** | 1.5B | **1.12 GB** | **50.9%** | 70.7% | [Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF) | `qwen2.5-coder-1.5b-instruct-q4_k_m.gguf` |
+| **Qwen2.5-Coder 0.5B** | 0.5B | ~0.4 GB | 43.5% | 61.6% | [Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF) | `qwen2.5-coder-0.5b-instruct-q4_k_m.gguf` |
+| Granite 3.3 2B | 2B | ~1.5 GB | not published | not published | [ibm-granite/granite-3.3-2b-instruct-GGUF](https://huggingface.co/ibm-granite/granite-3.3-2b-instruct-GGUF) | `granite-3.3-2b-instruct-Q4_K_M.gguf` |
+| CodeGemma 2B | 2B | ~1.6 GB | not published | completion only | [bartowski/codegemma-2b-GGUF](https://huggingface.co/bartowski/codegemma-2b-GGUF) | `codegemma-2b-Q4_K_M.gguf` |
+| DeepSeek-Coder 1.3B | 1.3B | ~0.8 GB | not published | not published | [bartowski/deepseek-coder-1.3b-instruct-GGUF](https://huggingface.co/bartowski/deepseek-coder-1.3b-instruct-GGUF) | `deepseek-coder-1.3b-instruct-Q4_K_M.gguf` |
+| StarCoder2 3B | 3B | ~1.7 GB | 27.2% | 31.7% | [bartowski/starcoder2-3b-GGUF](https://huggingface.co/bartowski/starcoder2-3b-GGUF) | `starcoder2-3b-Q4_K_M.gguf` |
+
+### The finding worth acting on
+
+Put the small Qwen variants against the big models we evaluated:
+
+```
+Qwen2.5-Coder  3B  at  1.9 GB   ->  C++ 68.3%
+Qwen2.5-Coder  7B  at  4.7 GB   ->  C++ 75.6%
+StarCoder2    15B  at  9.0 GB   ->  C++ 41.4%
+CodeGemma      7B  at  5.1 GB   ->  C++ 42.2%  (BabelCode, not directly comparable)
+```
+
+**Qwen2.5-Coder 3B reaches 90% of the 7B's C++ score at 40% of the size**, and it
+beats StarCoder2 15B by 27 points while being a fifth of the footprint. Even the
+1.5B at 1.1 GB outscores StarCoder2 15B on C++.
+
+Two consequences:
+
+- **The camera is not out of reach for real code generation.** At 1.9 GB the 3B
+  fits the Ambarella S50 budget. Nothing else in this class comes close on C++.
+- **The 3B is a serious fallback for the server**, not just a toy. If throughput
+  ever matters more than the last few points of accuracy, it runs roughly 2.5x
+  faster than the 7B for a 7-point C++ drop.
+
+### Which one to take
+
+| Use | Model | Why |
+|---|---|---|
+| Edge / camera code generation | Qwen2.5-Coder 3B | Best C++ that fits ~2 GB |
+| Draft model for the 7B | Qwen2.5-Coder 1.5B | Same tokenizer, 1.1 GB, lossless speedup |
+| Smoke tests, CI, laptops | Qwen2.5-Coder 0.5B | 0.4 GB, still 43.5% C++ |
+| Avoid for C++ | StarCoder2 3B | 27.2% C++, and the family has a documented FIM bug |
+
+```bash
+# the lightweight set, about 3.4 GB total
+for M in 0.5B 1.5B 3B; do
+  L=$(echo $M | tr 'A-Z' 'a-z')
+  huggingface-cli download Qwen/Qwen2.5-Coder-${M}-Instruct-GGUF \
+    qwen2.5-coder-${L}-instruct-q4_k_m.gguf --local-dir /opt/models
+done
+```
+
+---
+
 ## Fallbacks, if the shortlist underperforms
 
 | Model | Repo | Filename | When |
