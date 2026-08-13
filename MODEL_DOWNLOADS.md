@@ -172,6 +172,76 @@ same tokenizer, same prompt format, same behaviour.
 
 ---
 
+## Direct download links
+
+Paste into a browser, or use with wget. No login needed for these repos.
+URL pattern is `https://huggingface.co/<repo>/resolve/main/<filename>`.
+
+### Code generation
+
+```
+# Qwen2.5-Coder 7B  - 4.68 GB - primary
+https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_k_m.gguf
+
+# Granite 3.3 8B    - 4.94 GB - alternative, US origin
+https://huggingface.co/ibm-granite/granite-3.3-8b-instruct-GGUF/resolve/main/granite-3.3-8b-instruct-Q4_K_M.gguf
+
+# CodeGemma 7B      - ~5.1 GB - comparison
+https://huggingface.co/bartowski/codegemma-7b-it-GGUF/resolve/main/codegemma-7b-it-Q4_K_M.gguf
+```
+
+### Lightweight code - edge, draft models, CI
+
+```
+# Qwen2.5-Coder 3B   - ~1.9 GB - C++ 68.3% - best that fits the camera
+https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/resolve/main/qwen2.5-coder-3b-instruct-q4_k_m.gguf
+
+# Qwen2.5-Coder 1.5B - 1.12 GB - C++ 50.9% - draft model for the 7B
+https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf
+
+# Qwen2.5-Coder 0.5B - ~0.4 GB - C++ 43.5% - smoke tests and CI
+https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-0.5b-instruct-q4_k_m.gguf
+```
+
+### Reasoning and vision
+
+```
+# Phi-3.5-mini 3.8B - ~2.4 GB - Pass A reasoning
+https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf
+
+# Qwen2-VL 7B       - ~4.6 GB - image to text and licence plates
+https://huggingface.co/bartowski/Qwen2-VL-7B-Instruct-GGUF/resolve/main/Qwen2-VL-7B-Instruct-Q4_K_M.gguf
+# vision also needs the projector - check the repo Files tab for the exact mmproj name
+```
+
+### Fallbacks
+
+```
+# Qwen2.5-Coder 14B - ~9.0 GB - if the 7B fails the compile-retry eval
+https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF/resolve/main/qwen2.5-coder-14b-instruct-q4_k_m.gguf
+
+# Granite 3.3 2B    - ~1.5 GB - small US-origin option
+https://huggingface.co/ibm-granite/granite-3.3-2b-instruct-GGUF/resolve/main/granite-3.3-2b-instruct-Q4_K_M.gguf
+```
+
+### Fetch them with wget
+
+```bash
+cd /opt/models
+
+# -c resumes a partial download instead of restarting a 5 GB file
+wget -c https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/resolve/main/qwen2.5-coder-7b-instruct-q4_k_m.gguf
+wget -c https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf
+wget -c https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/resolve/main/qwen2.5-coder-3b-instruct-q4_k_m.gguf
+wget -c https://huggingface.co/ibm-granite/granite-3.3-8b-instruct-GGUF/resolve/main/granite-3.3-8b-instruct-Q4_K_M.gguf
+wget -c https://huggingface.co/bartowski/codegemma-7b-it-GGUF/resolve/main/codegemma-7b-it-Q4_K_M.gguf
+wget -c https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf
+
+sha256sum *.gguf
+```
+
+---
+
 ## Download script
 
 ```bash
