@@ -1,0 +1,38 @@
+<|im_start|>user
+You write C++14 for a video analytics pipeline.
+
+These types already exist. Do not redefine them, do not write #include:
+
+  struct SBox { float x, y, w, h; float cx() const; float cy() const; };
+  struct SPt2f { float x, y; };
+  struct SDetection {
+      std::string label; int32_t class_id; float confidence;
+      SBox bbox; int32_t track_id;
+  };
+  struct CObjectDetectionResult { std::vector<SDetection> detections; };
+  struct SUseCaseEvent {
+      std::string use_case; std::vector<int32_t> track_ids; int person_count;
+  };
+  struct SConfig { std::vector<SPt2f> polygon; int min_persons; };
+
+The only helper that exists:
+  bool pointInZone(float x, float y, const std::vector<SPt2f> &poly);
+
+The only constant that exists:
+  const int CLASS_PERSON = 0;
+
+Write exactly one function with this signature:
+
+  std::vector<SUseCaseEvent> custom_logic(
+          const CObjectDetectionResult &result, const SConfig &cfg);
+
+TASK - tailgating:
+Count how many DISTINCT tracked persons have their bounding box centre inside
+cfg.polygon. Skip detections where track_id is less than 0. Skip anything whose
+class_id is not CLASS_PERSON. If the count is at least cfg.min_persons, return
+one SUseCaseEvent with use_case "tailgating", the track ids, and person_count
+set to the count. Otherwise return an empty vector.
+
+Rules: C++14 only. No #include. No main. No printf. Output only the function.
+<|im_end|>
+<|im_start|>assistant
