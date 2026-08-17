@@ -1,0 +1,68 @@
+{
+  "_comment": "L3 line crossing. Line runs a=(0.20,0.50) b=(0.80,0.50) - horizontal, so crossing means moving in y, not x. min_confidence_x100 = 50.",
+
+  "config": { "a": [0.20, 0.50], "b": [0.80, 0.50], "min_confidence_x100": 50 },
+
+  "positive": [
+    { "name": "crosses_in",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.30,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":7}],
+      "expect_events": 1, "expect_direction": "in" },
+
+    { "name": "crosses_out",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.30,0.06,0.10],"track_id":7}],
+      "expect_events": 1, "expect_direction": "out" },
+
+    { "name": "two_people_both_cross",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.30,0.30,0.06,0.10],"track_id":7},
+               {"class_id":0,"confidence":0.90,"bbox":[0.60,0.30,0.06,0.10],"track_id":12}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.30,0.65,0.06,0.10],"track_id":7},
+               {"class_id":0,"confidence":0.90,"bbox":[0.60,0.65,0.06,0.10],"track_id":12}],
+      "expect_events": 2 }
+  ],
+
+  "negative": [
+    { "name": "approaches_but_stops",
+      "_why": "moves toward the line but stays on the same side",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.20,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.35,0.06,0.10],"track_id":7}],
+      "expect_events": 0 },
+
+    { "name": "untracked",
+      "_why": "track_id -1 cannot be matched across frames",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.30,0.06,0.10],"track_id":-1}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":-1}],
+      "expect_events": 0 },
+
+    { "name": "car_crosses",
+      "_why": "class_id 2 is a vehicle, not a person",
+      "prev": [{"class_id":2,"confidence":0.90,"bbox":[0.45,0.30,0.10,0.10],"track_id":9}],
+      "curr": [{"class_id":2,"confidence":0.90,"bbox":[0.45,0.65,0.10,0.10],"track_id":9}],
+      "expect_events": 0 },
+
+    { "name": "new_track_no_history",
+      "_why": "MOST MODELS FAIL THIS. appears already past the line, no previous position",
+      "prev": [],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":7}],
+      "expect_events": 0 },
+
+    { "name": "low_confidence",
+      "_why": "0.20 * 100 = 20, below the 50 threshold",
+      "prev": [{"class_id":0,"confidence":0.20,"bbox":[0.45,0.30,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.20,"bbox":[0.45,0.65,0.06,0.10],"track_id":7}],
+      "expect_events": 0 },
+
+    { "name": "sits_exactly_on_line",
+      "_why": "sideOfLine returns 0.0f. sPrev*sCurr<0 is correct, sPrev!=sCurr is not",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.45,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.45,0.06,0.10],"track_id":7}],
+      "expect_events": 0 },
+
+    { "name": "different_track_ids",
+      "_why": "two different people, neither has history of its own",
+      "prev": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.30,0.06,0.10],"track_id":7}],
+      "curr": [{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":99}],
+      "expect_events": 0 }
+  ]
+}

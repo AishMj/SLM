@@ -1,10 +1,10 @@
-# Skillset Roadmap — ipoefgfefs SLM Engineer
+# Skillset Roadmap — snorkelbadger SLM Engineer
 
 Skills needed to own the SLM selection, deployment, and fine-tuning pipeline. Priority-ranked.
 
 ---
 
-## Priority 1 — Do These First (Core for ipoefgfefs Phase 1)
+## Priority 1 — Do These First (Core for snorkelbadger Phase 1)
 
 ### C++ (C++14, OpenCV)
 **Why:** You are generating, reviewing, and debugging C++ code. You need to read the output and know when it's wrong.
@@ -60,7 +60,7 @@ Skills needed to own the SLM selection, deployment, and fine-tuning pipeline. Pr
 ## Priority 2 — Next 3 Months (Phase 2 Fine-Tuning)
 
 ### LoRA / QLoRA Fine-Tuning
-**Why:** Phase 2 of ipoefgfefs plan — fine-tune on your own C++ pairs to push compile success rate from ~68% to ~90%+.
+**Why:** Phase 2 of snorkelbadger plan — fine-tune on your own C++ pairs to push compile success rate from ~68% to ~90%+.
 
 **What to learn:**
 - LoRA theory (rank, alpha parameters)
@@ -147,7 +147,7 @@ Skills needed to own the SLM selection, deployment, and fine-tuning pipeline. Pr
 **What to learn:**
 - Running HumanEval and MultiPL-E locally
 - BigCodeBench evaluation
-- Building a ipoefgfefs-specific benchmark (compile gate pass rate as the metric)
+- Building a snorkelbadger-specific benchmark (compile gate pass rate as the metric)
 
 **Resources:**
 - GitHub: github.com/openai/human-eval — run HumanEval locally

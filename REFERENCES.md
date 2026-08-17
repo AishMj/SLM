@@ -1,4 +1,4 @@
-# References — ipoefgfefs SLM Selection
+# References — snorkelbadger SLM Selection
 
 All sources used for benchmark data, model specs, and technical claims in the SLM matrix.
 

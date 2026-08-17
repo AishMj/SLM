@@ -1,0 +1,72 @@
+<|im_start|>user
+You write C++14 for a video analytics pipeline.
+
+TYPES THAT ALREADY EXIST - do not redefine, do not write #include:
+
+  struct SBox { float x, y, w, h; float cx() const; float cy() const; };
+  struct SPt2f { float x, y; };
+  struct SDetection { std::string label; int32_t class_id; float confidence;
+                      SBox bbox; int32_t track_id; };
+  struct CObjectDetectionResult { std::vector<SDetection> detections; };
+  struct SFrame { std::string camera_id; int64_t timestamp_us;
+                  CObjectDetectionResult result; };
+  struct SStageEvent { std::string stage; std::string camera_id;
+                       int64_t timestamp_us; int32_t track_id; SBox bbox;
+                       std::string direction; float confidence; };
+  struct SUseCaseEvent { std::string use_case; std::string camera_id;
+                         int64_t timestamp_us; std::vector<int32_t> track_ids;
+                         int person_count; std::string direction;
+                         float confidence; };
+  struct SZoneConfig { std::vector<SPt2f> polygon; int min_persons;
+                       int min_confidence_x100; };
+  struct SLineConfig { SPt2f a; SPt2f b; int min_confidence_x100; };
+  struct SChainConfig { std::string source_camera; std::string target_camera;
+                        int64_t window_us; float min_face_conf; };
+
+FUNCTIONS YOU MAY CALL - nothing else exists:
+  bool  pointInZone(float x, float y, const std::vector<SPt2f> &poly);
+  float sideOfLine(const SPt2f &a, const SPt2f &b, float px, float py);
+  SBox  headRegion(const SBox &person);
+  bool  hasFace(const SBox &crop, float minConfidence);
+
+CONSTANTS THAT EXIST:
+  const int CLASS_PERSON = 0;
+  const int CLASS_BICYCLE = 1;
+  const int CLASS_VEHICLE = 2;
+
+YOU MUST NOT:
+  - write #include, main(), printf, cout, or any I/O
+  - call any function not listed above
+  - redefine any type given above
+  - use exceptions, new, delete, or malloc
+  - use C++17 or later features
+
+THIS STAGE - line crossing, camera cam_01
+  input  : SFrame prev, SFrame curr   (from node n1, person_detection)
+  output : SStageEvent                (to node n4, correlate)
+  params : line a, line b, min_confidence_x100 = 50
+
+RULE
+  A person crossed when the SIGN of sideOfLine changes between prev and curr
+  for the SAME track_id. Fill EVERY SStageEvent field - the next stage cannot
+  work without stage, camera_id, timestamp_us, track_id, bbox and direction.
+
+COMPLETE THIS FUNCTION. Output only the body and the closing brace.
+
+void stage_line_crossing(const SFrame &prev, const SFrame &curr,
+                         const SLineConfig &cfg,
+                         std::vector<SStageEvent> &out)
+{
+    // TODO 1: loop over curr.result.detections
+    // TODO 2:   skip if track_id < 0
+    // TODO 3:   skip if class_id != CLASS_PERSON
+    // TODO 4:   skip if confidence * 100 < cfg.min_confidence_x100
+    // TODO 5:   find the SAME track_id in prev.result.detections; skip if absent
+    // TODO 6:   sPrev = sideOfLine(cfg.a, cfg.b, prevBox.cx(), prevBox.cy())
+    //           sCurr = sideOfLine(cfg.a, cfg.b, currBox.cx(), currBox.cy())
+    // TODO 7:   crossed only when sPrev * sCurr < 0.0f
+    //           exactly 0.0f is NOT a crossing
+    // TODO 8:   direction is "in" when sPrev < 0.0f, otherwise "out"
+    // TODO 9:   fill stage = "line_crossing", camera_id and timestamp_us from
+    //           curr, track_id, bbox from the current detection, direction and
+    //           confidence, then push_back onto out

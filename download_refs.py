@@ -1,6 +1,6 @@
 # download_refs.py
 #
-# downloads every reference used in ipoefgfefs_SLM_Matrix.xlsx so we have
+# downloads every reference used in snorkelbadger_SLM_Matrix.xlsx so we have
 # offline copies to show in review. papers come down as pdf, everything
 # else gets saved as html.
 #
@@ -212,7 +212,7 @@ def get_one(url, path):
 
 def main():
     print("")
-    print("downloading references for ipoefgfefs_SLM_Matrix.xlsx")
+    print("downloading references for snorkelbadger_SLM_Matrix.xlsx")
     print("total files to get: %d" % len(REFS))
     print("saving into: %s/" % OUTDIR)
     print("")

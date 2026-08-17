@@ -1,7 +1,7 @@
 # llama.cpp - setup and running the models
 
 Everything needed to go from a bare Ubuntu box to serving a GGUF model for the
-ipoefgfefs workflow builder. Written against an NVIDIA A30 24 GB, but the only
+snorkelbadger workflow builder. Written against an NVIDIA A30 24 GB, but the only
 thing that changes for another card is the CUDA architecture number in step 2.
 
 ---
@@ -188,7 +188,7 @@ automatically. Ctrl-C to exit.
 
 ### Read the prompt from a file
 
-Useful for the real 6-8K ipoefgfefs prompt:
+Useful for the real 6-8K snorkelbadger prompt:
 
 ```bash
 llama-cli -m /opt/models/qwen2.5-coder-7b-instruct-q4_k_m.gguf \
@@ -235,12 +235,12 @@ There is also a browser UI at `http://<server>:8080` for quick manual testing.
 ```bash
 sudo tee /etc/systemd/system/llama-server.service > /dev/null <<'EOF'
 [Unit]
-Description=llama.cpp server for ipoefgfefs
+Description=llama.cpp server for snorkelbadger
 After=network.target
 
 [Service]
 Type=simple
-User=ipoefgfefs
+User=snorkelbadger
 ExecStart=/opt/llama.cpp/build/bin/llama-server \
   -m /opt/models/qwen2.5-coder-7b-instruct-q4_k_m.gguf \
   -ngl 99 -c 16384 --host 127.0.0.1 --port 8080 --parallel 2
@@ -279,7 +279,7 @@ if something on another host needs it, and put it behind a firewall.
 
 ### Why `-c 16384`
 
-The ipoefgfefs prompt is 6-8K tokens. 16K gives room for the prompt plus a
+The snorkelbadger prompt is 6-8K tokens. 16K gives room for the prompt plus a
 generated block, with headroom.
 
 Do not set it to the model's advertised maximum. The KV cache grows linearly with
@@ -509,4 +509,4 @@ sha256sum model.gguf
 | Server documentation | https://github.com/ggml-org/llama.cpp/tree/master/tools/server |
 | llama-cpp-python | https://github.com/abetlen/llama-cpp-python |
 | GGUF format spec | https://github.com/ggml-org/ggml/blob/master/docs/gguf.md |
-| Model sizing and VRAM maths | `ipoefgfefs_SLM_Matrix.xlsx`, Detailed sheet |
+| Model sizing and VRAM maths | `snorkelbadger_SLM_Matrix.xlsx`, Detailed sheet |

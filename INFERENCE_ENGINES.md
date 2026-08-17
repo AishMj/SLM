@@ -1,6 +1,6 @@
-# Inference Engine Comparison — ipoefgfefs SLM Deploy
+# Inference Engine Comparison — snorkelbadger SLM Deploy
 
-Which engine to use at each stage of ipoefgfefs development.
+Which engine to use at each stage of snorkelbadger development.
 
 ---
 
@@ -18,7 +18,7 @@ Which engine to use at each stage of ipoefgfefs development.
 
 ## Full Comparison Table
 
-| Engine | ARM A53 | Prod Ready | ipoefgfefs Fit | Main Advantage | Main Limitation | POC → Prod Path |
+| Engine | ARM A53 | Prod Ready | snorkelbadger Fit | Main Advantage | Main Limitation | POC → Prod Path |
 |---|---|---|---|---|---|---|
 | **llama.cpp** | Yes | Yes | ★★★★★ | No daemon, GGUF, C++ embeddable, GPU via `-ngl 99` | One request at a time | Start and stay here for server SLM |
 | **llama-cpp-python** | Yes | Yes | ★★★★★ | Direct Python import inside Flask, no subprocess | Binds to llama.cpp version | Use this in prod Flask API |
@@ -39,9 +39,9 @@ Which engine to use at each stage of ipoefgfefs development.
 
 ---
 
-## Why SGLang Matters for ipoefgfefs Specifically
+## Why SGLang Matters for snorkelbadger Specifically
 
-Every ipoefgfefs compile prompt starts with the **same 6,000–8,000 tokens**:
+Every snorkelbadger compile prompt starts with the **same 6,000–8,000 tokens**:
 - System instructions
 - C++ block header files
 - workflow_blocks.json schema

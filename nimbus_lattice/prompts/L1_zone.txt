@@ -1,0 +1,66 @@
+<|im_start|>user
+You write C++14 for a video analytics pipeline.
+
+TYPES THAT ALREADY EXIST - do not redefine, do not write #include:
+
+  struct SBox { float x, y, w, h; float cx() const; float cy() const; };
+  struct SPt2f { float x, y; };
+  struct SDetection { std::string label; int32_t class_id; float confidence;
+                      SBox bbox; int32_t track_id; };
+  struct CObjectDetectionResult { std::vector<SDetection> detections; };
+  struct SFrame { std::string camera_id; int64_t timestamp_us;
+                  CObjectDetectionResult result; };
+  struct SStageEvent { std::string stage; std::string camera_id;
+                       int64_t timestamp_us; int32_t track_id; SBox bbox;
+                       std::string direction; float confidence; };
+  struct SUseCaseEvent { std::string use_case; std::string camera_id;
+                         int64_t timestamp_us; std::vector<int32_t> track_ids;
+                         int person_count; std::string direction;
+                         float confidence; };
+  struct SZoneConfig { std::vector<SPt2f> polygon; int min_persons;
+                       int min_confidence_x100; };
+  struct SLineConfig { SPt2f a; SPt2f b; int min_confidence_x100; };
+  struct SChainConfig { std::string source_camera; std::string target_camera;
+                        int64_t window_us; float min_face_conf; };
+
+FUNCTIONS YOU MAY CALL - nothing else exists:
+  bool  pointInZone(float x, float y, const std::vector<SPt2f> &poly);
+  float sideOfLine(const SPt2f &a, const SPt2f &b, float px, float py);
+  SBox  headRegion(const SBox &person);
+  bool  hasFace(const SBox &crop, float minConfidence);
+
+CONSTANTS THAT EXIST:
+  const int CLASS_PERSON = 0;
+  const int CLASS_BICYCLE = 1;
+  const int CLASS_VEHICLE = 2;
+
+YOU MUST NOT:
+  - write #include, main(), printf, cout, or any I/O
+  - call any function not listed above
+  - redefine any type given above
+  - use exceptions, new, delete, or malloc
+  - use C++17 or later features
+
+THIS STAGE - zone occupancy, camera cam_01
+  input  : SFrame
+  output : SUseCaseEvent
+  params : polygon, min_persons = 1, min_confidence_x100 = 50
+
+RULE
+  Emit one event if at least cfg.min_persons DISTINCT tracked persons have
+  their bounding box centre inside cfg.polygon.
+
+COMPLETE THIS FUNCTION. Output only the body and the closing brace.
+
+void stage_zone_occupancy(const SFrame &curr, const SZoneConfig &cfg,
+                          std::vector<SUseCaseEvent> &out)
+{
+    // TODO 1: loop over curr.result.detections
+    // TODO 2:   skip if track_id < 0
+    // TODO 3:   skip if class_id != CLASS_PERSON
+    // TODO 4:   skip if confidence * 100 < cfg.min_confidence_x100
+    // TODO 5:   if pointInZone(bbox.cx(), bbox.cy(), cfg.polygon) collect the track_id
+    // TODO 6: count DISTINCT collected track ids
+    // TODO 7: if the count >= cfg.min_persons, push one SUseCaseEvent with
+    //         use_case "zone_occupancy", camera_id, timestamp_us, the track
+    //         ids, and person_count

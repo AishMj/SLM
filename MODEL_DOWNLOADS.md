@@ -1,10 +1,10 @@
-# Model downloads - the ipoefgfefs stack
+# Model downloads - the snorkelbadger stack
 
 The models we selected, where to get them, and the exact filenames.
 Not a catalogue - only what we intend to run.
 
 Setup and usage: [LLAMA_CPP_SETUP.md](LLAMA_CPP_SETUP.md)
-Selection rationale and benchmarks: `ipoefgfefs_SLM_Matrix.xlsx`
+Selection rationale and benchmarks: `snorkelbadger_SLM_Matrix.xlsx`
 
 Target hardware: NVIDIA A30 24 GB, Ubuntu, llama.cpp.
 All Q4_K_M, which is what we deploy.
@@ -246,7 +246,7 @@ sha256sum *.gguf
 
 ```bash
 #!/usr/bin/env bash
-# fetch the ipoefgfefs model stack. about 23 GB total.
+# fetch the snorkelbadger model stack. about 23 GB total.
 set -e
 
 DEST=/opt/models

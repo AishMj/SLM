@@ -1,6 +1,6 @@
-# ipoefgfefs SLM Selection
+# snorkelbadger SLM Selection
 
-Small language model selection for the ipoefgfefs Workflow Builder.
+Small language model selection for the snorkelbadger Workflow Builder.
 
 The SLM generates C++ `custom_logic` block implementations that stitch multiple camera analytics
 outputs together, cross-compiled for server (x86 Ubuntu) and camera (Ambarella S50, Cortex-A53, aarch64).
@@ -52,9 +52,9 @@ Llama 3.2 11B Vision · InternVL2 8B · LLaVA-1.6 13B · PaliGemma 3B · Moondre
 
 | File | Description |
 |---|---|
-| `ipoefgfefs_SLM_Matrix.xlsx` | Main deliverable — 76 rows, 27 columns, 8 sheets |
+| `snorkelbadger_SLM_Matrix.xlsx` | Main deliverable — 76 rows, 27 columns, 8 sheets |
 | `gen_xl.py` | Python script to regenerate the Excel from source data |
-| `GLOSSARY.md` | 50+ term glossary with ipoefgfefs examples |
+| `GLOSSARY.md` | 50+ term glossary with snorkelbadger examples |
 | `INFERENCE_ENGINES.md` | llama.cpp vs alternatives — POC to prod decision guide |
 | `ADDITIONAL_FACTORS.md` | 10 selection factors beyond benchmarks |
 | `SKILLSET_ROADMAP.md` | Priority-ranked learning path |
@@ -92,7 +92,7 @@ File sizes use the llama.cpp quant spec (Q4_K_M 4.5 bits/param, Q5_K_M 5.5, Q8_0
 
 Max GPU VRAM is weights + KV cache, where
 `KV = 2 * layers * kv_heads * head_dim * seq_len * 2 bytes`, architecture taken from the paper
-or `config.json`. Both an 8K figure (the actual ipoefgfefs prompt size) and a full-context figure
+or `config.json`. Both an 8K figure (the actual snorkelbadger prompt size) and a full-context figure
 are given, because the gap is large — Llama 3.1 8B Q4 is 5.2 GB at 8K but 13.1 GB at 128K.
 
 Token rates are **calculated from memory bandwidth, not measured**:
@@ -106,7 +106,7 @@ MultiPL-E C++ at all, and Mistral 7B's HumanEval is leaderboard-only.
 
 ## Context window warning
 
-The ipoefgfefs prompt is 6–8K tokens. These leave little or no room for generated output:
+The snorkelbadger prompt is 6–8K tokens. These leave little or no room for generated output:
 
 CodeGemma 7B (8K) · InternVL2 8B (8K) · PaliGemma 3B (8K) · LLaVA-1.6 (4K) · Moondream2 (2K)
 

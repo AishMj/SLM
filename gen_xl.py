@@ -1,4 +1,4 @@
-# ipoefgfefs SLM selection matrix generator
+# snorkelbadger SLM selection matrix generator
 # Sheet 1 "Summary"  - clean, for a non-technical audience
 # Sheet 2 "Detailed" - every data column followed by its own Reference column
 #
@@ -71,7 +71,7 @@ SRC_TOKS_G = ("ESTIMATE, CALIBRATED AGAINST PUBLISHED MEASUREMENTS. Formula: 100
               "exists for this metric, for any model in this sheet.  ||  "
               "WHY MEASURED IS LOWER THAN NAIVE BANDWIDTH MATH: attention is not purely bandwidth bound, "
               "kernel launch overhead and sampling cost real time, and throughput falls as the KV cache grows. "
-              "Expect the longer 6-8K ipoefgfefs prompt to run BELOW these figures, which are 2K-context numbers.")
+              "Expect the longer 6-8K snorkelbadger prompt to run BELOW these figures, which are 2K-context numbers.")
 SRC_TOKS_C = ("ESTIMATE, CALIBRATED AGAINST PUBLISHED MEASUREMENTS. Formula: 80 GB/s (DDR5-5600 dual "
               "channel, 89.6 GB/s theoretical derated) x 0.60 efficiency / model_size_GB.  ||  "
               "MEASURED ANCHORS: AMD EPYC 7763 running Llama 2 7B Q4_K_M = 15 tok/s; dual-socket EPYC 9334 = "
@@ -96,7 +96,7 @@ EMB_SIZE = ("CALC. FP16 = params_B x 2.0 GB, INT8 = params_B x 1.0 GB.  ||  NOTE
             "transformers or sentence-transformers at native precision. The Q4_K_M/Q5_K_M/Q8_0 rows used "
             "elsewhere in this sheet do not apply here.")
 
-INF_COMMON = ("INFERENCE (what ipoefgfefs actually runs on) - llama.cpp: NVIDIA CUDA compute capability "
+INF_COMMON = ("INFERENCE (what snorkelbadger actually runs on) - llama.cpp: NVIDIA CUDA compute capability "
               "5.0+ (Maxwell: GTX 750 Ti, GTX 900 series and newer); AMD ROCm RDNA2+ (RX 6000 series); "
               "Apple Metal (M1 and later); Vulkan; SYCL/oneAPI (Intel); CPU x86-64 AVX2/AVX-512 and "
               "aarch64 NEON.")
@@ -322,13 +322,13 @@ M = [
    prim_s="arxiv 2402.19173 - StarCoder2 is released as a base model. The card explicitly notes it is "
           "not an instruction-following model.",
    sec="Repository-level code completion; code editing (CanItEdit). FIM supported but MEASURABLY BROKEN (see source)",
-   sec_s="VERIFIED 2026-08-10 by direct read of the arxiv 2402.19173 PDF.  ||  Repo-level completion: TABLE 17 (RepoBench v1.1) and Section 7.6. Code editing: TABLE 13 (CanItEdit).  ||  TWO PAPER-DOCUMENTED WEAKNESSES THAT MATTER FOR ipoefgfefs AND ARE NOT VISIBLE IN ANY HEADLINE SCORE:  ||  (1) FIM IS BROKEN. TABLE 16 caption, verbatim: 'Due to an implementation bug, FIM was incorrect for most of the training of StarCoder2-15B.' Section 7.5 text: 'StarCoder2-15B underperforms on FIM.' Measured FIM is Python 48.4 / Java 60.5 / JS 54.7 against StarCoderBase-15B at 62 / 73 / 74. Listing FIM as a STRENGTH of this model would be wrong - it is a regression.  ||  (2) C++ SPECIFICALLY IS WEAK. Section 7.2.1, paraphrased from the paper: StarCoder2-15B underperforms on C++ because roughly ONE THIRD of the C++ it generates is incomplete - the paper's example is an unexpected break immediately after the beginning of a for loop. That is exactly the failure mode a 5-gate cross-compile pipeline would hit on every run.",
+   sec_s="VERIFIED 2026-08-10 by direct read of the arxiv 2402.19173 PDF.  ||  Repo-level completion: TABLE 17 (RepoBench v1.1) and Section 7.6. Code editing: TABLE 13 (CanItEdit).  ||  TWO PAPER-DOCUMENTED WEAKNESSES THAT MATTER FOR snorkelbadger AND ARE NOT VISIBLE IN ANY HEADLINE SCORE:  ||  (1) FIM IS BROKEN. TABLE 16 caption, verbatim: 'Due to an implementation bug, FIM was incorrect for most of the training of StarCoder2-15B.' Section 7.5 text: 'StarCoder2-15B underperforms on FIM.' Measured FIM is Python 48.4 / Java 60.5 / JS 54.7 against StarCoderBase-15B at 62 / 73 / 74. Listing FIM as a STRENGTH of this model would be wrong - it is a regression.  ||  (2) C++ SPECIFICALLY IS WEAK. Section 7.2.1, paraphrased from the paper: StarCoder2-15B underperforms on C++ because roughly ONE THIRD of the C++ it generates is incomplete - the paper's example is an unexpected break immediately after the beginning of a for loop. That is exactly the failure mode a 5-gate cross-compile pipeline would hit on every run.",
    bench="MultiPL-E C++ 41.4% | HumanEval 46.3% | HumanEval+ 37.8% | MBPP 66.2% | MBPP+ 53.1% | CanItEdit descriptive 43.08% / lazy 38.45% | RepoBench-v1.1 ES 74.08% | CRUXEval-I 48.1% / O 47.1% | GSM8K-PAL 65.1% | FIM Python 48.4% (SEE SOURCE - BUGGED)",
    bench_s="FULLY VERIFIED 2026-08-10 by direct read of the arxiv 2402.19173 PDF.  ||  MultiPL-E C++ 41.4% = TABLE 10 (Pass@1 on MultiPL-E, 50 samples per problem, temperature 0.2, top-p 0.95). For context in the same table: CodeLlama-13B C++ 37.4, DeepSeekCoder-33B C++ 51.2, StarCoder2-7B C++ 33.6.  ||  HumanEval 46.3 / HumanEval+ 37.8 / MBPP 66.2 / MBPP+ 53.1 = TABLE 9 (greedy decoding, EvalPlus framework).  ||  CanItEdit code-EDITING 43.08 descriptive / 38.45 lazy = TABLE 13 - the most relevant published benchmark in this sheet for a compile-retry loop, since it measures editing existing code rather than writing it fresh.  ||  RepoBench-v1.1 Python edit-similarity 74.08 = TABLE 17.  ||  CRUXEval-I 48.1 / CRUXEval-O 47.1 = TABLE 15.  ||  GSM8K-PAL 65.1 = TABLE 14.  ||  FIM Python 48.4 / Java 60.5 / JavaScript 54.7 = TABLE 16. CRITICAL: these FIM scores are LOWER than StarCoder2-15B's own predecessor StarCoderBase-15B (62 / 73 / 74) and far below CodeLlama-13B (74.5 / 80 / 85). The Table 16 caption states verbatim: 'Due to an implementation bug, FIM was incorrect for most of the training of StarCoder2-15B.' Full detail in the Secondary Purpose - SOURCE cell.",
    eng="llama.cpp, vLLM, TGI, Ollama",
    eng_s="llama.cpp: GGUF community builds.  ||  vLLM: docs.vllm.ai (Starcoder2ForCausalLM).  ||  "
          "TGI: natively supported, BigCode and HF are the same ecosystem.",
-   vstat="FULLY VERIFIED 2026-08-10 by direct PDF read; every figure cited to a table number. C++ 41.4 CONFIRMED (Table 10). NEW FINDINGS: FIM is BUGGED (Table 16 caption) and C++ output is 1/3 incomplete (Sec 7.2.1). Both argue against this model for ipoefgfefs.",
+   vstat="FULLY VERIFIED 2026-08-10 by direct PDF read; every figure cited to a table number. C++ 41.4 CONFIRMED (Table 10). NEW FINDINGS: FIM is BUGGED (Table 16 caption) and C++ output is 1/3 incomplete (Sec 7.2.1). Both argue against this model for snorkelbadger.",
  ),
  dict(
    n="CodeGemma 7B IT", n_s="huggingface.co/google/codegemma-7b-it - model card title",
@@ -342,7 +342,7 @@ M = [
    train_s="CodeGemma report on ai.google.dev/gemma/docs/codegemma - hardware section. CHECK.",
    ly=28, kvh=16, hd=256, ctx="8,192",
    ctx_s="huggingface.co/google/codegemma-7b-it - config.json max_position_embeddings = 8192. "
-         "THIS IS THE ELIMINATING CONSTRAINT for ipoefgfefs: a 6-8K prompt fills the entire window.",
+         "THIS IS THE ELIMINATING CONSTRAINT for snorkelbadger: a 6-8K prompt fills the entire window.",
    prim="Code generation and Fill-in-the-Middle",
    prim_s="ai.google.dev/gemma/docs/codegemma/model_card - 'Model Information' describes code completion "
           "and generation as the intended use.",
@@ -486,7 +486,7 @@ M = [
    train="Google TPUv4p, TPUv5p and TPUv5e",
    train_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it model card: TPUv4p, TPUv5p and TPUv5e.",
    ly=34, kvh=4, hd=256, ctx="131,072 input / 8,192 output",
-   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it: 128K token INPUT context but an 8,192 token OUTPUT limit. The output cap is a separate constraint from the context window and is not a problem for ipoefgfefs (generated blocks are ~80 lines), but note it before assuming 128K end to end.",
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/gemma-3-4b-it: 128K token INPUT context but an 8,192 token OUTPUT limit. The output cap is a separate constraint from the context window and is not a problem for snorkelbadger (generated blocks are ~80 lines), but note it before assuming 128K end to end.",
    prim="General instruction following with vision (image to text)",
    prim_s="arxiv 2503.19786 - Gemma 3 introduces multimodality to the Gemma family at 4B and above.",
    sec="Multilingual (140+ languages claimed); basic code generation",
@@ -556,13 +556,13 @@ M = [
    lic="Llama 3.2 Community License", lic_s="huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct/blob/main/LICENSE",
    tier="FULL", ctry=LLAMA_OK + " CRITICAL: the Llama 3.2 licence explicitly EXCLUDES use of the "
         "MULTIMODAL models by individuals or companies domiciled in the EU. This model is multimodal. "
-        "If ipoefgfefs ships in Europe this is a hard blocker. Origin: United States (Meta).",
+        "If snorkelbadger ships in Europe this is a hard blocker. Origin: United States (Meta).",
    ctry_s=LLAMA_SRC + "  ||  VERIFIED 2026-08-10, EXACT LICENCE WORDING: 'With respect to any multimodal "
           "models included in Llama 3.2, the rights granted under Section 1(a) of the Llama 3.2 Community "
           "License Agreement are not being granted to you if you are an individual domiciled in, or a "
           "company with a principal place of business in, the European Union.'  ||  CRITICAL EXCEPTION, "
           "also verbatim: 'This restriction does not apply to end users of a product or service that "
-          "incorporates any such multimodal models.'  ||  PRACTICAL READING for ipoefgfefs: if the "
+          "incorporates any such multimodal models.'  ||  PRACTICAL READING for snorkelbadger: if the "
           "developing entity's principal place of business is outside the EU, the model may be used and "
           "the resulting product MAY be supplied to EU end users. If the developing entity is EU-domiciled, "
           "it is blocked. This turns on where ipo's contracting entity sits - a question for counsel, "
@@ -602,7 +602,7 @@ M = [
    train_s="No dedicated arXiv paper for InternVL2 specifically; InternVL 1.0/1.5 papers exist "
            "(arxiv 2312.14238, 2404.16821). CHECK which paper actually covers the 2.0 release.",
    ly=32, kvh=8, hd=128, ctx="8,192",
-   ctx_s="config.json max_position_embeddings = 8192. LIMITING for ipoefgfefs at a 6-8K prompt.",
+   ctx_s="config.json max_position_embeddings = 8192. LIMITING for snorkelbadger at a 6-8K prompt.",
    prim="Image to text - multimodal understanding",
    prim_s="huggingface.co/OpenGVLab/InternVL2-8B model card 'Introduction'.",
    sec="Document OCR; chart understanding; multi-image comparison",
@@ -633,7 +633,7 @@ M = [
            "CHECK whether 1.6 differs.",
    ly=40, kvh=40, hd=128, ctx="4,096",
    ctx_s="config.json max_position_embeddings = 4096 (Vicuna/Llama 2 inheritance). "
-         "SEVERELY LIMITING - a 6-8K ipoefgfefs prompt does not fit at all.",
+         "SEVERELY LIMITING - a 6-8K snorkelbadger prompt does not fit at all.",
    prim="Image to text - visual instruction following",
    prim_s="arxiv 2310.03744 title: 'Improved Baselines with Visual Instruction Tuning'.",
    sec="Visual question answering; OCR (weaker than Qwen2-VL)",
@@ -656,7 +656,7 @@ M = [
    train="Google TPUv5e",
    train_s="arxiv 2407.07726 - training-infrastructure section. CHECK.",
    ly=18, kvh=1, hd=256, ctx="512 tokens (input + output)",
-   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/paligemma-3b-mix-448: the model supports 512 token input/output text sequences at 448x448 image resolution.  ||  MAJOR CORRECTION: an earlier revision of this sheet stated 8,192. That was WRONG by a factor of 16. At 512 tokens this model is categorically unusable for ipoefgfefs - the prompt alone is 6-8K.",
+   ctx_s="VERIFIED 2026-08-10 against huggingface.co/google/paligemma-3b-mix-448: the model supports 512 token input/output text sequences at 448x448 image resolution.  ||  MAJOR CORRECTION: an earlier revision of this sheet stated 8,192. That was WRONG by a factor of 16. At 512 tokens this model is categorically unusable for snorkelbadger - the prompt alone is 6-8K.",
    prim="Image to text - captioning and visual QA",
    prim_s="arxiv 2407.07726 - positioned as a versatile base model INTENDED TO BE FINE-TUNED, "
           "not used zero-shot.",
@@ -1004,7 +1004,7 @@ C1 = [("Model Name", 30), ("License / Compliance", 30), ("Params", 22), ("Quanti
       ("Context Window", 16), ("tok/s CPU (est.)", 12), ("tok/s GPU (est.)", 12),
       ("Purpose / Category", 34), ("Benchmark / Metrics", 42), ("Inference Engines", 40)]
 
-t = s1.cell(row=1, column=1, value="ipoefgfefs Workflow Builder - SLM Selection Summary   |   small language models only   |   full sourcing on the 'Detailed' sheet")
+t = s1.cell(row=1, column=1, value="snorkelbadger Workflow Builder - SLM Selection Summary   |   small language models only   |   full sourcing on the 'Detailed' sheet")
 t.font = Font(bold=True, size=13, color="FFFFFF")
 t.fill = PatternFill("solid", fgColor=HDR)
 s1.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(C1))
@@ -1057,7 +1057,7 @@ s1.auto_filter.ref = "A2:%s%d" % (get_column_letter(len(C1)), r - 1)
 r += 1
 note = s1.cell(row=r, column=1, value=(
  "READ ME  -  CPU RAM = model file size x 1.15 (context buffers and allocator overhead).  "
- "VRAM = model weights + KV cache at an 8K context, which is the actual ipoefgfefs prompt size.  "
+ "VRAM = model weights + KV cache at an 8K context, which is the actual snorkelbadger prompt size.  "
  "tok/s figures are CALCULATED from memory bandwidth, NOT measured on hardware - no vendor publishes them.  "
  "Every figure on this sheet has a full source citation in the matching column of the 'Detailed' sheet."))
 note.font = Font(size=9, italic=True)
@@ -1088,7 +1088,7 @@ fills = []
 for h, _ in C2:
     fills.append(REFH if "SOURCE" in h else (BAD if "VERIFICATION" in h else GRP))
 
-t = s2.cell(row=1, column=1, value="ipoefgfefs SLM Selection - DETAILED with per-cell sourcing   |   every data column is followed by its own SOURCE column   |   read the VERIFICATION STATUS column before review")
+t = s2.cell(row=1, column=1, value="snorkelbadger SLM Selection - DETAILED with per-cell sourcing   |   every data column is followed by its own SOURCE column   |   read the VERIFICATION STATUS column before review")
 t.font = Font(bold=True, size=13, color="FFFFFF")
 t.fill = PatternFill("solid", fgColor=HDR)
 s2.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(C2))
@@ -1111,7 +1111,7 @@ for m in M:
             t_c = t_g = "NA - emits a vector, not tokens"
             tc_src = tg_src = EMB_TOKS
             hw_cell = "NOT A llama.cpp MODEL. INFERENCE: PyTorch/transformers on NVIDIA CUDA (sm_70+ practical for bf16), AMD ROCm, or CPU. vLLM supports several of these in embedding mode. NO GGUF BUILDS EXIST - the llama.cpp hardware floor quoted elsewhere in this sheet does not apply."
-            hw_cell_src = "TRAINING: " + m["train_s"] + "  ||  INFERENCE: " + "Inference stack read from each model card usage section, 2026-08-10.  ||  THE KEY POINT FOR ipoefgfefs: none of these models has an official GGUF build, so none of them can be served through the existing llama.cpp pipeline. Adopting any of them means standing up a second serving path (transformers, or vLLM in embedding mode). That is an infrastructure decision, not just a model choice."
+            hw_cell_src = "TRAINING: " + m["train_s"] + "  ||  INFERENCE: " + "Inference stack read from each model card usage section, 2026-08-10.  ||  THE KEY POINT FOR snorkelbadger: none of these models has an official GGUF build, so none of them can be served through the existing llama.cpp pipeline. Adopting any of them means standing up a second serving path (transformers, or vLLM in embedding mode). That is an infrastructure decision, not just a model choice."
         else:
             vram   = round(fsz + kv_gb(m["ly"], m["kvh"], m["hd"], 8192), 1)
             v_src  = SRC_VRAM
@@ -1207,7 +1207,7 @@ for t_ in [
  "     compatibility comes entirely from llama.cpp's supported-backends documentation. Both are given",
  "     separately in the Hardware Support column and must not be conflated.",
  "",
- "  c) 'NOT PUBLISHED' IS A FINDING, NOT A GAP. MultiPL-E C++ - the benchmark closest to the ipoefgfefs",
+ "  c) 'NOT PUBLISHED' IS A FINDING, NOT A GAP. MultiPL-E C++ - the benchmark closest to the snorkelbadger",
  "     workload - is published by only 3 of the 19 models here. Phi-4, Granite and CodeGemma never",
  "     released a C++ number. Any C++ claim about them is inference from Python HumanEval, and should",
  "     be challenged as such.",
@@ -1222,7 +1222,7 @@ for t_ in [
  "CELLS MARKED RED - HARD BLOCKERS REQUIRING LEGAL SIGN-OFF:",
  "",
  "  - Llama 3.2 11B Vision: the Llama 3.2 licence excludes EU-domiciled entities from using the",
- "    MULTIMODAL models. If ipoefgfefs ships in Europe this is a blocker, not a caveat.",
+ "    MULTIMODAL models. If snorkelbadger ships in Europe this is a blocker, not a caveat.",
  "  - LLaVA-1.6 13B: licence chain is LLaVA (Apache 2.0) over Vicuna over Llama 2. The effective",
  "    licence is the most restrictive link, not the top one.",
  "  - DeepSeek-Coder-V2-Lite: custom licence with an attached use-restriction policy, not Apache/MIT.",
@@ -1263,7 +1263,7 @@ for t_ in [
  "    Llama 3.1 8B Q4_K_M, RTX 4090:  95-110 tok/s via Ollama;  104 tok/s via llama.cpp at 16K context",
  "    [sources: markaicode.com Ollama vs llama.cpp benchmark; smeltcore.com]",
  "",
- "GPU - other cards, same conditions, useful if the ipoefgfefs server is not a 4090:",
+ "GPU - other cards, same conditions, useful if the snorkelbadger server is not a 4090:",
  "",
  "    RTX 3090 24GB      7B  95 tok/s    13B  55 tok/s    34B  28 tok/s",
  "    RTX 4070S 12GB     7B  75 tok/s    13B  40 tok/s    34B  out of memory",
@@ -1282,7 +1282,7 @@ for t_ in [
  "",
  "THREE CAVEATS THAT APPLY TO EVERY tok/s FIGURE HERE:",
  "",
- "  1. These are 2048-CONTEXT numbers. The ipoefgfefs prompt is 6-8K. Throughput falls as the KV cache",
+ "  1. These are 2048-CONTEXT numbers. The snorkelbadger prompt is 6-8K. Throughput falls as the KV cache",
  "     grows, so expect REAL rates BELOW the table above. The 16K-context cross-check (104 vs 135 tok/s)",
  "     shows roughly a 20-25% drop, which is the right order to plan against.",
  "",
@@ -1296,7 +1296,7 @@ for t_ in [
  "",
  "BOTTOM LINE FOR REVIEW: use tok/s to RANK the models against each other, which is what it is reliable",
  "for. Do not quote it as a performance commitment. The only number that settles real throughput on the",
- "ipoefgfefs workload is a measurement on ipo's own hardware at the real 6-8K prompt length.",
+ "snorkelbadger workload is a measurement on ipo's own hardware at the real 6-8K prompt length.",
 ]:
     r = line(r, t_)
 
@@ -1322,7 +1322,7 @@ for t_ in [
  "   transformers, or vLLM in embedding mode. That is why their rows show FP16 and INT8 instead of",
  "   Q4_K_M / Q5_K_M / Q8_0 - the llama.cpp quantization spec simply does not apply to them.",
  "   ADOPTING ANY OF THEM MEANS STANDING UP A SECOND SERVING PATH. That is an infrastructure decision",
- "   for the ipoefgfefs SRV layer, not just a model choice, and it should be costed as one.",
+ "   for the snorkelbadger SRV layer, not just a model choice, and it should be costed as one.",
  "",
  "3. tok/s IS BLANK ON PURPOSE, AND VRAM IS LOWER THAN YOU MIGHT EXPECT.",
  "",
@@ -1424,7 +1424,7 @@ for t_ in [
  "PASS 2 - REMAINING 11 MODELS CHECKED, 2026-08-10. Eight further corrections:",
  "",
  "  9.  PaliGemma 3B context:  8,192  ->  512 tokens     [source: Google model card]",
- "      IMPACT: HIGH. Wrong by a factor of 16. At 512 tokens it cannot hold the ipoefgfefs prompt",
+ "      IMPACT: HIGH. Wrong by a factor of 16. At 512 tokens it cannot hold the snorkelbadger prompt",
  "      at all. Categorically disqualified, not merely marginal.",
  "",
  "  10. Moondream2 benchmarks were STALE and UNDERSTATED the model:",
@@ -1498,7 +1498,7 @@ for t_ in [
  "           on C++ because about a third of generated C++ is incomplete - the paper's own example is an",
  "           unexpected break straight after the start of a for loop. For a 5-gate cross-compile pipeline",
  "           that is the worst possible failure mode.",
- "      TAKEN TOGETHER these remove StarCoder2 from serious consideration for ipoefgfefs, on the paper's",
+ "      TAKEN TOGETHER these remove StarCoder2 from serious consideration for snorkelbadger, on the paper's",
  "      own evidence rather than on a benchmark ranking.",
  "",
  "  19. LLaVA-1.6 13B benchmarks: NOW SOURCED to llava-vl.github.io/blog/2024-01-30-llava-next (the",
@@ -1653,7 +1653,7 @@ for w, a, u in [
 ]:
     r = line(r, "%-58s %-34s %s" % (w, a, u))
 
-OUT = "/home/h412581/Downloads/ipoefgfefs_SLM_Matrix.xlsx"
+OUT = "snorkelbadger_SLM_Matrix.xlsx"
 wb.save(OUT)
 print("saved:", OUT)
 print("sheets:", wb.sheetnames)
