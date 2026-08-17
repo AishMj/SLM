@@ -1,0 +1,30 @@
+{
+  "_comment": "HOP 1 - what node n1 (person_detection) emits on cam_01. This is CAiTaskResult, the SLM's input type for the line_crossing kernel. Track 7 crosses the line (y=0.50) between frame 2 and frame 3.",
+
+  "frames": [
+    { "camera_id": "cam_01", "timestamp_us": 1723377600000000,
+      "task": "object_detection",
+      "detections": [
+        {"label":"person","class_id":0,"confidence":0.91,"bbox":[0.45,0.20,0.06,0.12],"track_id":7}
+      ]},
+
+    { "camera_id": "cam_01", "timestamp_us": 1723377600200000,
+      "task": "object_detection",
+      "detections": [
+        {"label":"person","class_id":0,"confidence":0.92,"bbox":[0.45,0.34,0.06,0.12],"track_id":7}
+      ]},
+
+    { "camera_id": "cam_01", "timestamp_us": 1723377600400000,
+      "task": "object_detection",
+      "detections": [
+        {"label":"person","class_id":0,"confidence":0.93,"bbox":[0.45,0.62,0.06,0.12],"track_id":7}
+      ]},
+
+    { "camera_id": "cam_01", "timestamp_us": 1723377600600000,
+      "task": "object_detection",
+      "detections": [
+        {"label":"person","class_id":0,"confidence":0.93,"bbox":[0.45,0.75,0.06,0.12],"track_id":7},
+        {"label":"person","class_id":0,"confidence":0.41,"bbox":[0.30,0.70,0.06,0.12],"track_id":-1}
+      ]}
+  ]
+}

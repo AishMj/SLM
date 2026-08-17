@@ -1,0 +1,43 @@
+{
+  "_comment": "What the UI produces when the user draws the flow. This is INPUT 1 of 6 - see 04_inputs.md. The harness decomposes it into one prompt per node; the model never sees the whole thing.",
+
+  "workflow_id": "wf_0001",
+  "name": "gate entry with face check",
+
+  "nodes": [
+    { "id": "n1",
+      "type": "person_detection",
+      "camera": "cam_01",
+      "generate_code": false,
+      "_why": "runs a model, no logic to write",
+      "params": { "min_confidence": 0.5, "classes": ["person"] } },
+
+    { "id": "n2",
+      "type": "line_crossing",
+      "camera": "cam_01",
+      "generate_code": true,
+      "_why": "single camera rule, one input edge - this is what the SLM writes",
+      "params": {
+        "line": { "a": [0.20, 0.50], "b": [0.80, 0.50] },
+        "direction_filter": "in",
+        "min_confidence": 0.5 } },
+
+    { "id": "n3",
+      "type": "face_detection",
+      "camera": "cam_02",
+      "generate_code": false,
+      "params": { "min_confidence": 0.6 } },
+
+    { "id": "n4",
+      "type": "correlate",
+      "generate_code": false,
+      "_why": "TWO input edges. persistent state, window expiry, removal on match. hand-write this - see 06_eval_complex.md",
+      "params": { "window_ms": 5000 } }
+  ],
+
+  "edges": [
+    { "from": "n1", "to": "n2" },
+    { "from": "n2", "to": "n4" },
+    { "from": "n3", "to": "n4" }
+  ]
+}

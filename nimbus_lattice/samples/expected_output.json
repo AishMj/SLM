@@ -1,0 +1,14 @@
+{
+  "_comment": "HOP 4 - the final conclusion, from the correlate node. One event. The 8-second face did NOT match because it fell outside window_ms.",
+
+  "events": [
+    { "use_case": "line_cross_then_face",
+      "camera_id": "cam_01",
+      "timestamp_us": 1723377600400000,
+      "track_ids": [7, 3],
+      "_why_two_ids": "track 7 on cam_01 crossed, track 3 on cam_02 was the face. both carried through so an operator can trace the conclusion.",
+      "person_count": 1,
+      "direction": "in",
+      "confidence": 0.88 }
+  ]
+}

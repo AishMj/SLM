@@ -1,0 +1,15 @@
+{
+  "_comment": "HOP 2 - what the line_crossing kernel MUST emit. This is the hand-off type SStageEvent, and it is the INPUT to the next stage. Exactly one event: track 7 crossed between frame 2 and 3. The untracked detection in frame 4 produced nothing.",
+
+  "_the_point": "Every field here is required downstream. timestamp_us for the correlation window, camera_id to know the source, track_id for identity, bbox so stage 2 can crop without re-detecting. A kernel that omits one has produced something that compiles and cannot be composed.",
+
+  "events": [
+    { "stage": "line_crossing",
+      "camera_id": "cam_01",
+      "timestamp_us": 1723377600400000,
+      "track_id": 7,
+      "bbox": [0.45, 0.62, 0.06, 0.12],
+      "direction": "in",
+      "confidence": 0.93 }
+  ]
+}

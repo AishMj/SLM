@@ -1,0 +1,18 @@
+{
+  "_comment": "HOP 3 - what node n3 (face_detection) emits on cam_02, 1.5 seconds after the crossing. Inside the 5000 ms window, so the correlate node should match it.",
+
+  "frames": [
+    { "camera_id": "cam_02", "timestamp_us": 1723377601900000,
+      "task": "object_detection",
+      "detections": [
+        {"label":"face","class_id":0,"confidence":0.88,"bbox":[0.52,0.30,0.08,0.10],"track_id":3}
+      ]},
+
+    { "camera_id": "cam_02", "timestamp_us": 1723377608000000,
+      "_why": "7.6 seconds after the crossing - OUTSIDE the 5 s window. must NOT match.",
+      "task": "object_detection",
+      "detections": [
+        {"label":"face","class_id":0,"confidence":0.85,"bbox":[0.60,0.32,0.08,0.10],"track_id":9}
+      ]}
+  ]
+}
