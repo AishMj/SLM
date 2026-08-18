@@ -1,0 +1,19 @@
+{
+  "_populated_for": "TESTS STATE ACROSS FRAMES. Needs track_id to match the same object between prev and curr, which object_detection provides because the tracker is attached.",
+  "name": "line_crossing",
+  "description": "Emit when a tracked object crosses a configured line.",
+  "requires": ["region.person", "region.vehicle"],
+  "requires_fields": ["bbox", "track_id"],
+  "frames": "2",
+  "state": "none",
+  "libraries": [],
+  "emits": "event.crossing",
+  "provides": ["track_id", "bbox", "direction", "timestamp_us", "camera_id"],
+  "params": {
+    "line_a": "SPt2f",
+    "line_b": "SPt2f",
+    "min_confidence_x100": "int"
+  },
+  "rule": "A track crossed when the sign of sideOfLine changes between the previous frame and the current one for the same track_id; direction is in when the previous side was negative, otherwise out.",
+  "skeleton": "line_crossing.txt"
+}

@@ -1,0 +1,19 @@
+{
+  "_populated_for": "SIMPLEST A->B. 1 frame, no state, no geometry beyond a polygon test. Start here.",
+  "name": "intrusion",
+  "description": "Emit when any tracked object is inside a restricted polygon.",
+  "requires": ["region.person", "region.vehicle"],
+  "requires_fields": ["bbox", "track_id"],
+  "frames": "1",
+  "state": "none",
+  "libraries": [],
+  "emits": "event.usecase",
+  "provides": ["track_ids", "person_count", "timestamp_us", "camera_id"],
+  "params": {
+    "polygon": "std::vector<SPt2f>",
+    "target_class_id": "int",
+    "min_confidence_x100": "int"
+  },
+  "rule": "Emit one event listing every tracked object of the target class whose bounding box centre is inside the polygon.",
+  "skeleton": "intrusion.txt"
+}

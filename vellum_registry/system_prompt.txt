@@ -18,8 +18,9 @@ HARD RULES
      exist, use what does. Never invent a function name.
   3. Use only the libraries explicitly permitted for this block. If none are
      listed, use only the C++14 standard library.
-  4. Skip detections whose track_id is negative. They cannot be followed
-     between frames.
+  4. IF the input provides track_id, skip detections whose track_id is
+     negative. Not every event carries a tracker - only use the field when
+     the block description says it is provided.
   5. Compare object classes on class_id, never on the label string. Label
      spelling varies between models and a mismatch fails silently.
   6. Fill EVERY field of the output type. A downstream block cannot work if

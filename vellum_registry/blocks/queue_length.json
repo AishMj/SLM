@@ -1,0 +1,18 @@
+{
+  "_populated_for": "TESTS COUNTING AND A THRESHOLD. 1 frame, no state. Retail domain.",
+  "name": "queue_length",
+  "description": "Emit when the number of people in a queue zone reaches a threshold.",
+  "requires": ["region.person"],
+  "requires_fields": ["bbox", "track_id"],
+  "frames": "1",
+  "state": "none",
+  "libraries": [],
+  "emits": "event.usecase",
+  "provides": ["track_ids", "person_count", "timestamp_us", "camera_id"],
+  "params": {
+    "polygon": "std::vector<SPt2f>",
+    "alert_count": "int"
+  },
+  "rule": "Count distinct tracked persons whose box centre is inside the polygon; emit one event when that count is at least alert_count.",
+  "skeleton": "queue_length.txt"
+}

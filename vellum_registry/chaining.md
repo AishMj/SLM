@@ -12,13 +12,13 @@ A = object_detection        B = line_crossing        C = tailgating
 ```
 upstream : object_detection
   emits    region.person
-  carries  bbox, class_id, confidence, track_id, label
+  provides  bbox, class_id, confidence, track_id, label
 
 block    : line_crossing
   requires region.person          SATISFIED
   needs    bbox, track_id         SATISFIED
   emits    event.crossing
-  carries  track_id, bbox, direction, timestamp_us, camera_id
+  provides  track_id, bbox, direction, timestamp_us, camera_id
 ```
 
 Legal. Prompt is built, kernel is generated:
@@ -38,7 +38,7 @@ has.
 ```
 upstream : line_crossing          <- promoted from blocks.json to a producer
   emits    event.crossing
-  carries  track_id, bbox, direction, timestamp_us, camera_id
+  provides  track_id, bbox, direction, timestamp_us, camera_id
 
 block    : tailgating
   requires region.person, event.crossing     SATISFIED by event.crossing
@@ -58,7 +58,7 @@ void stage_tailgating(const std::vector<SStageEvent> &crossings,
 
 **A block's declared output IS its interface for the next pass.**
 
-`blocks.json` gives every block an `emits` and a `carries`, in exactly the same
+`blocks.json` gives every block an `emits` and a `provides`, in exactly the same
 shape as a task's output. So the edge checker does not care whether the upstream
 is a model-backed task or a previously generated block - it reads the same two
 fields either way.

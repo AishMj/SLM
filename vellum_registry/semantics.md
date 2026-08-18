@@ -55,7 +55,7 @@ satisfiable(A) = { A.emits } U supertypes(A.emits) U A.subtypes
 
 edge A -> B is LEGAL  iff
     satisfiable(A)  intersects  B.requires
-AND B.needs_fields  is a subset of  A.carries
+AND B.requires_fields  is a subset of  A.provides
 ```
 
 Two conditions, both necessary.
@@ -100,8 +100,8 @@ region.face is not region.license_plate, and not a subtype of it
 ### Condition 2 catches the right kind of thing missing a field
 
 ```
-semantic_segmentation emits mask.semantic, carries [per_pixel_class_id]
-line_crossing         needs_fields [bbox, track_id]
+semantic_segmentation emits mask.semantic, provides [per_pixel_class_id]
+line_crossing         requires_fields [bbox, track_id]
 
 no track_id, no bbox
 -> REJECTED
@@ -178,8 +178,8 @@ message: "anpr requires region.license_plate. face_detection emits
 ### depth -> tailgating
 
 ```
-producer : monocular_depth  emits depth.map, carries [per_pixel_relative_depth]
-consumer : tailgating       needs_fields [track_id, timestamp_us]
+producer : monocular_depth  emits depth.map, provides [per_pixel_relative_depth]
+consumer : tailgating       requires_fields [track_id, timestamp_us]
 
 tag mismatch AND no track_id
 REJECTED for two independent reasons
@@ -201,13 +201,13 @@ message: "semantic_segmentation labels pixels but does not separate
 ### pose -> line crossing — LEGAL but worth noting
 
 ```
-producer : pose_estimation  emits keypoints.pose, carries [bbox, track_id]
+producer : pose_estimation  emits keypoints.pose, provides [bbox, track_id]
 consumer : line_crossing    requires region.person, needs [bbox, track_id]
 
 tag: keypoints.pose is not region.person -> would be REJECTED on tag alone
 ```
 
-**Decision needed.** Pose carries a bbox and a track_id, so it *could* drive
+**Decision needed.** Pose provides a bbox and a track_id, so it *could* drive
 line crossing. Two options:
 
 - declare `keypoints.pose` a subtype of `region.person` — permissive, but then

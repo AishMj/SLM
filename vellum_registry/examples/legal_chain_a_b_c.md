@@ -7,7 +7,7 @@ Two generation passes. Each one independent.
 Edge check:
 
 ```
-object_detection emits region.person, carries [bbox, class_id, confidence, track_id, label]
+object_detection emits region.person, provides [bbox, class_id, confidence, track_id, label]
 line_crossing    requires region.person          OK
                  needs    bbox, track_id         OK
 LEGAL
@@ -20,7 +20,7 @@ THIS BLOCK
   block          : line_crossing
   input semantic : region.person
   input type     : CObjectDetectionResult
-  input carries  : bbox, class_id, confidence, track_id, label
+  input provides  : bbox, class_id, confidence, track_id, label
   output semantic: event.crossing
   output type    : SStageEvent
   must fill      : track_id, bbox, direction, timestamp_us, camera_id
@@ -46,7 +46,7 @@ void stage_line_crossing(const SFrame &prev, const SFrame &curr,
 always reads:
 
 ```
-line_crossing emits event.crossing, carries [track_id, bbox, direction, timestamp_us, camera_id]
+line_crossing emits event.crossing, provides [track_id, bbox, direction, timestamp_us, camera_id]
 tailgating    requires region.person OR event.crossing     OK via event.crossing
               needs    track_id, timestamp_us              OK
 LEGAL
@@ -59,7 +59,7 @@ THIS BLOCK
   block          : tailgating
   input semantic : event.crossing
   input type     : std::vector<SStageEvent>
-  input carries  : track_id, bbox, direction, timestamp_us, camera_id
+  input provides  : track_id, bbox, direction, timestamp_us, camera_id
   output semantic: event.usecase
   output type    : SUseCaseEvent
   must fill      : track_ids, person_count, timestamp_us, camera_id
@@ -85,7 +85,7 @@ Only this:
 
 ```
 emits   : event.crossing
-carries : track_id, bbox, direction, timestamp_us, camera_id
+provides : track_id, bbox, direction, timestamp_us, camera_id
 ```
 
 **Not the code.** Pass 2 has no idea how pass 1 was implemented, which is

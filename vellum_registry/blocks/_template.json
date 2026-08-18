@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy this to create a new custom analytic. Every field is required. See ../block_schema.json for what each one populates.",
+
+  "name": "",
+  "description": "",
+
+  "requires": [],
+  "requires_fields": [],
+
+  "frames": "1",
+  "state": "none",
+  "libraries": [],
+
+  "emits": "event.usecase",
+  "provides": ["track_ids", "timestamp_us", "camera_id"],
+
+  "params": {},
+
+  "rule": "",
+  "skeleton": ""
+}

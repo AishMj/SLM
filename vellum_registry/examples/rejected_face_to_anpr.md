@@ -11,7 +11,7 @@ The case you asked about. Here is exactly what happens.
 ```
 producer : face_detection
   emits    region.face
-  carries  bbox, confidence, track_id
+  provides  bbox, confidence, track_id
 
 consumer : anpr
   requires region.license_plate

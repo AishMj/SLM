@@ -1,0 +1,42 @@
+{
+  "_what_this_is": "The GENERIC shape every custom analytic must fill. Not a list of analytics - a template. Any new analytic asked for tomorrow is described by filling these ten fields. Instances live in blocks/.",
+
+  "_field_guide": {
+    "name":            "unique id. POPULATES prompt section 6 (block) and the generated function name stage_<name>",
+    "description":     "one line for humans and for the UI. Never enters a prompt.",
+    "requires":        "semantic tags this block accepts. USED BY edge check condition 1.",
+    "requires_fields": "fields it needs from upstream. USED BY edge check condition 2. POPULATES prompt section 6 (must read).",
+    "frames":          "1 = current only, 2 = previous and current, n = bounded window. DETERMINES THE FUNCTION SIGNATURE.",
+    "state":           "none | per_track | global. none is generatable; the others need a state object passed by reference.",
+    "libraries":       "[] means C++14 standard library only. POPULATES prompt section 3 (allow-list).",
+    "emits":           "semantic tag this block produces. USED BY edge check when this block feeds another.",
+    "provides":        "fields this block puts in its event. POPULATES prompt section 6 (must fill). THIS IS THE INTERFACE FOR THE NEXT BLOCK.",
+    "params":          "config, name -> C++ type. POPULATES prompt section 6 (params) and the config struct.",
+    "rule":            "ONE sentence, plain English. POPULATES prompt section 6 (RULE). This is the only free text the model sees.",
+    "skeleton":        "filename under templates/. POPULATES prompt section 7."
+  },
+
+  "_how_to_add_a_new_analytic": [
+    "1. copy blocks/_template.json to blocks/<your_name>.json",
+    "2. fill every field above",
+    "3. write templates/<your_name>.txt - the signature plus numbered TODOs, ending mid-function with NO closing brace",
+    "4. run the edge check against the upstream event you intend to use",
+    "5. nothing else changes - the prompt builder and edge checker read the registry"
+  ],
+
+  "_allowed_values": {
+    "frames":    ["1", "2", "n"],
+    "state":     ["none", "per_track", "global"],
+    "libraries": ["opencv"],
+    "semantic_tags": [
+      "image.full_frame",
+      "region.object", "region.person", "region.vehicle", "region.bicycle",
+      "region.face", "region.license_plate",
+      "mask.instance", "mask.semantic",
+      "keypoints.pose", "depth.map",
+      "embedding.image", "embedding.face",
+      "text.generic", "text.plate_number",
+      "event.crossing", "event.usecase"
+    ]
+  }
+}

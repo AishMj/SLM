@@ -28,11 +28,11 @@ THIS BLOCK
   block          : line_crossing                 blocks.json key
   input semantic : region.person                 upstream task's emits
   input type     : CObjectDetectionResult        upstream task's cpp_result
-  input carries  : bbox, class_id, confidence,   upstream task's carries
+  input provides  : bbox, class_id, confidence,   upstream task's provides
                    track_id, label
   output semantic: event.crossing                blocks.json emits
   output type    : SStageEvent                   contract.hpp
-  must fill      : track_id, bbox, direction,    blocks.json carries
+  must fill      : track_id, bbox, direction,    blocks.json provides
                    timestamp_us, camera_id
   frames         : 2                             blocks.json frames
   libraries      : none                          blocks.json libraries
@@ -75,7 +75,7 @@ def check_edge(producer, consumer):
         return False, (f"{consumer_name} requires {consumer['requires']}, "
                        f"{producer_name} emits {emitted}")
 
-    missing = set(consumer["needs_fields"]) - set(producer["outputs"][0]["carries"])
+    missing = set(consumer["requires_fields"]) - set(producer["outputs"][0]["provides"])
     if missing:
         return False, f"{producer_name} does not carry {sorted(missing)}"
 
@@ -84,7 +84,7 @@ def check_edge(producer, consumer):
 
 ## Libraries
 
-`blocks.json` carries a `libraries` list per block. Only `crop` currently
+`blocks.json` provides a `libraries` list per block. Only `crop` currently
 declares `opencv`; everything else is empty and gets standard library only.
 
 The allow-list section is generated from that field, so a block cannot use a

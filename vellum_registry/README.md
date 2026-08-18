@@ -33,7 +33,7 @@ Edges are validated on the tag.
 ```
 edge A -> B is LEGAL iff
     B.requires contains A.emits or one of its supertypes
-AND B.needs_fields is a subset of A.carries
+AND B.requires_fields is a subset of A.provides
 ```
 
 Both conditions. The first catches the wrong kind of thing; the second catches
@@ -52,14 +52,14 @@ refuses identically every time.
 
 ## Adding a task
 
-Add an entry to `tasks.json` with its `emits` tag, its `carries` fields, and
+Add an entry to `tasks.json` with its `emits` tag, its `provides` fields, and
 what it `accepts`. Nothing else changes - the edge checker and the prompt
 builder both read the registry.
 
 ## Adding a block for the SLM to write
 
-Add to `blocks.json`: `requires`, `needs_fields`, `frames`, `libraries`,
-`emits`, `carries`, `params`, and the rule in one sentence. Add a skeleton
+Add to `blocks.json`: `requires`, `requires_fields`, `frames`, `libraries`,
+`emits`, `provides`, `params`, and the rule in one sentence. Add a skeleton
 under `templates/`.
 
 ## The one trap
