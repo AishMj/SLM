@@ -1,0 +1,149 @@
+{
+  "_comment": "AI task registry. One entry per model-backed task. The C++ result type is NOT enough to decide whether two blocks can connect - face detection and license-plate detection both return CObjectDetectionResult. The semantic tag is what makes the difference. See semantics.md.",
+
+  "_schema": {
+    "kind": "ai_model | derived | business_logic",
+    "cpp_result": "the C++ type from ai_tasks/common/include",
+    "inputs": "each with a semantic tag it ACCEPTS",
+    "outputs": "each with the semantic tag it EMITS",
+    "carries": "fields present on the output - what a downstream block may read",
+    "generate_code": "whether the SLM writes this block, or it runs a model"
+  },
+
+  "tasks": {
+
+    "object_detection": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CObjectDetectionResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame"] } ],
+      "outputs": [ { "name": "detections",
+                     "emits": "region.object",
+                     "subtypes": ["region.person", "region.vehicle", "region.bicycle"],
+                     "carries": ["bbox", "class_id", "confidence", "track_id", "label"] } ],
+      "notes": "class_id selects the subtype. class_id 0 makes it region.person."
+    },
+
+    "instance_segmentation": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CInstanceSegmentationResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame"] } ],
+      "outputs": [ { "name": "objects",
+                     "emits": "region.object",
+                     "subtypes": ["region.person", "region.vehicle"],
+                     "carries": ["bbox", "class_id", "confidence", "track_id", "mask_rle"] } ],
+      "notes": "superset of object_detection - adds mask_rle. Anything that accepts region.object accepts this."
+    },
+
+    "pose_estimation": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CPoseEstimationResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame", "region.person"] } ],
+      "outputs": [ { "name": "poses",
+                     "emits": "keypoints.pose",
+                     "carries": ["bbox", "track_id", "confidence", "keypoints[17]"] } ],
+      "notes": "COCO 17-keypoint skeleton. Can run on a full frame or on a person crop."
+    },
+
+    "monocular_depth": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CMonocularDepthResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame"] } ],
+      "outputs": [ { "name": "depth",
+                     "emits": "depth.map",
+                     "carries": ["per_pixel_relative_depth"] } ],
+      "notes": "RELATIVE depth, not metric. Cannot be used for real-world distance without calibration."
+    },
+
+    "semantic_segmentation": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CSemanticSegmentationResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame"] } ],
+      "outputs": [ { "name": "classmap",
+                     "emits": "mask.semantic",
+                     "carries": ["per_pixel_class_id"] } ],
+      "notes": "no instances - all persons share one class. Cannot count people from this."
+    },
+
+    "vision_language": {
+      "kind": "ai_model",
+      "status": "exists",
+      "cpp_result": "CVisionLanguageResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame", "region.object"] } ],
+      "outputs": [ { "name": "vlm",
+                     "emits": "embedding.image",
+                     "carries": ["embedding", "embedding_dim", "top_labels"] } ],
+      "notes": "L2-normalised vector. This is the cross-camera identity mechanism."
+    },
+
+    "face_detection": {
+      "kind": "ai_model",
+      "status": "proposed",
+      "cpp_result": "CObjectDetectionResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame", "region.person"] } ],
+      "outputs": [ { "name": "faces",
+                     "emits": "region.face",
+                     "carries": ["bbox", "confidence", "track_id"] } ],
+      "notes": "SAME C++ type as object_detection but a DIFFERENT semantic tag. This is exactly why type checking alone is not enough."
+    },
+
+    "face_recognition": {
+      "kind": "ai_model",
+      "status": "proposed",
+      "cpp_result": "CVisionLanguageResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "crop", "accepts": ["region.face"] } ],
+      "outputs": [ { "name": "identity",
+                     "emits": "embedding.face",
+                     "carries": ["embedding", "embedding_dim"] } ],
+      "notes": "REQUIRES region.face. Feeding it a full frame or a person box is illegal."
+    },
+
+    "license_plate_detection": {
+      "kind": "ai_model",
+      "status": "proposed",
+      "cpp_result": "CObjectDetectionResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "frame", "accepts": ["image.full_frame", "region.vehicle"] } ],
+      "outputs": [ { "name": "plates",
+                     "emits": "region.license_plate",
+                     "carries": ["bbox", "confidence", "track_id"] } ],
+      "notes": "runs on a full frame or a vehicle crop. NOT on a person or face crop."
+    },
+
+    "anpr": {
+      "kind": "ai_model",
+      "status": "proposed",
+      "cpp_result": "CTextResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "crop", "accepts": ["region.license_plate"] } ],
+      "outputs": [ { "name": "plate_text",
+                     "emits": "text.plate_number",
+                     "carries": ["text", "confidence"] } ],
+      "notes": "ACCEPTS ONLY region.license_plate. A face crop can never satisfy this - see examples/rejected_face_to_anpr.md."
+    },
+
+    "ocr": {
+      "kind": "ai_model",
+      "status": "proposed",
+      "cpp_result": "CTextResult",
+      "generate_code": false,
+      "inputs":  [ { "name": "crop", "accepts": ["image.full_frame", "region.object"] } ],
+      "outputs": [ { "name": "text",
+                     "emits": "text.generic",
+                     "carries": ["text", "bbox", "confidence"] } ],
+      "notes": "general text in an image. ANPR is the plate-specific variant with a stricter input."
+    }
+  }
+}

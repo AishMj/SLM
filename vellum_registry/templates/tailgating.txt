@@ -1,0 +1,14 @@
+COMPLETE THIS FUNCTION. Output only the body and the closing brace.
+
+void stage_tailgating(const std::vector<SStageEvent> &crossings,
+                      const STailgateConfig &cfg,
+                      std::vector<SUseCaseEvent> &out)
+{
+    // TODO 1: if crossings is empty, return
+    // TODO 2: take the timestamp of the LAST crossing as the window end
+    // TODO 3: collect DISTINCT track_ids whose crossing timestamp is within
+    //         cfg.window_us of that end
+    // TODO 4: if the distinct count < cfg.min_persons, return
+    // TODO 5: push one SUseCaseEvent with use_case "tailgating", the collected
+    //         track_ids, person_count, and camera_id and timestamp_us carried
+    //         from the last crossing

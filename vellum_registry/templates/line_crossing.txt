@@ -1,0 +1,17 @@
+COMPLETE THIS FUNCTION. Output only the body and the closing brace.
+
+void stage_line_crossing(const SFrame &prev, const SFrame &curr,
+                         const SLineConfig &cfg,
+                         std::vector<SStageEvent> &out)
+{
+    // TODO 1: loop over curr.result.detections
+    // TODO 2:   skip if track_id < 0
+    // TODO 3:   skip if class_id != CLASS_PERSON
+    // TODO 4:   skip if confidence * 100 < cfg.min_confidence_x100
+    // TODO 5:   find the SAME track_id in prev.result.detections; skip if absent
+    // TODO 6:   sPrev = sideOfLine(cfg.a, cfg.b, prevBox.cx(), prevBox.cy())
+    //           sCurr = sideOfLine(cfg.a, cfg.b, currBox.cx(), currBox.cy())
+    // TODO 7:   crossed only when sPrev * sCurr < 0.0f; exactly 0.0f is NOT crossed
+    // TODO 8:   direction is "in" when sPrev < 0.0f, otherwise "out"
+    // TODO 9:   fill stage, camera_id, timestamp_us, track_id, bbox, direction,
+    //           confidence - ALL of them - then push_back onto out
