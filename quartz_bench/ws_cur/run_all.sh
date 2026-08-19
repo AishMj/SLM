@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # run_all.sh [seed] - every workflow: generate, compile, run, tabulate
+cd "$(dirname "$0")"
 SEED="${1:-42}"
 printf "%-22s %-8s %-8s %-8s %s\n" WORKFLOW GENERATE COMPILE RUN RESULT
 printf -- "-%.0s" {1..64}; echo

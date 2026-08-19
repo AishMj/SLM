@@ -1,8 +1,38 @@
 #!/usr/bin/env bash
 # run.sh <workflow.json> [seed] - generate, compile, RUN, report
 set -u
-LLAMA=${LLAMA:-$HOME/llama.cpp/build/bin/llama-cli}
-MODEL=${MODEL:-$HOME/models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf}
+cd "$(dirname "$0")"
+# --- locate llama-cli and a model, or explain how to point at them ---
+find_llama() {
+  [ -n "${LLAMA:-}" ] && { echo "$LLAMA"; return; }
+  command -v llama-cli 2>/dev/null && return
+  for p in "$HOME/llama.cpp/build/bin/llama-cli" \
+           /opt/llama.cpp/build/bin/llama-cli \
+           ../../llama.cpp/build/bin/llama-cli \
+           ../../../llama.cpp/build/bin/llama-cli; do
+    [ -x "$p" ] && { echo "$p"; return; }
+  done
+}
+find_model() {
+  [ -n "${MODEL:-}" ] && { echo "$MODEL"; return; }
+  for d in "$HOME/models" /opt/models ./models ../models; do
+    m=$(ls "$d"/*.gguf 2>/dev/null | head -1) && [ -n "$m" ] && { echo "$m"; return; }
+  done
+}
+
+LLAMA=$(find_llama)
+MODEL=$(find_model)
+
+if [ -z "$LLAMA" ] || [ ! -x "$LLAMA" ]; then
+  echo "ERROR: llama-cli not found."
+  echo "  export LLAMA=/path/to/llama.cpp/build/bin/llama-cli"
+  exit 1
+fi
+if [ -z "$MODEL" ] || [ ! -f "$MODEL" ]; then
+  echo "ERROR: no .gguf model found."
+  echo "  export MODEL=/path/to/model.gguf"
+  exit 1
+fi
 WF="${1:?usage: run.sh workflows/wf_x.json [seed]}"
 SEED="${2:-42}"
 

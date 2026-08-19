@@ -25,12 +25,33 @@ ws_cur/
   out/                generated kernels and binaries (gitignored)
 ```
 
-## Run one
+## Get it and run it
 
 ```bash
+# download just this folder
+git clone --filter=blob:none --no-checkout https://github.com/AishMj/SLM.git qb
+cd qb && git sparse-checkout init --cone && git sparse-checkout set quartz_bench
+git checkout main && cd quartz_bench
+
+# run
 cd ws_cur
 ./run.sh workflows/wf_intrusion.json
 ```
+
+`run.sh` finds `llama-cli` and a `.gguf` automatically. It looks on PATH, then
+`~/llama.cpp/build/bin`, `/opt/llama.cpp/build/bin`, and two levels up. Models
+are looked for in `~/models`, `/opt/models`, `./models`, `../models`.
+
+If it cannot find them:
+
+```bash
+export LLAMA=/path/to/llama.cpp/build/bin/llama-cli
+export MODEL=/path/to/model.gguf
+```
+
+Nothing else is needed. `nlohmann/json.hpp` is vendored, so `g++` is the only
+other requirement. Scripts `cd` to their own directory, so you can call them
+from anywhere.
 
 ```
 === wf_intrusion  (frames=1, seed=42) ===
