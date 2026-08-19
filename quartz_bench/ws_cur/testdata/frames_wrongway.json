@@ -1,0 +1,5 @@
+{"frames":[
+ {"timestamp_us":1000000,"detections":[{"class_id":2,"confidence":0.9,"bbox":[0.60,0.50,0.10,0.10],"track_id":20},{"class_id":2,"confidence":0.9,"bbox":[0.20,0.70,0.10,0.10],"track_id":21}]},
+ {"timestamp_us":1200000,"detections":[{"class_id":2,"confidence":0.9,"bbox":[0.40,0.50,0.10,0.10],"track_id":20},{"class_id":2,"confidence":0.9,"bbox":[0.40,0.70,0.10,0.10],"track_id":21}]},
+ {"timestamp_us":1400000,"detections":[{"class_id":2,"confidence":0.9,"bbox":[0.20,0.50,0.10,0.10],"track_id":20},{"class_id":2,"confidence":0.9,"bbox":[0.60,0.70,0.10,0.10],"track_id":21}]}
+]}

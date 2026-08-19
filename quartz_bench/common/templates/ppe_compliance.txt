@@ -1,0 +1,14 @@
+void stage_kernel(const SFrame &curr, const SBlockConfig &cfg,
+                  std::vector<SEvent> &out)
+{
+    // TODO 1: declare a std::vector<int32_t> for violating track ids
+    // TODO 2: loop over curr.result.detections as the PERSON loop
+    // TODO 3:   skip if track_id < 0 or class_id != cfg.person_class_id
+    // TODO 4:   head = headRegion(person.bbox, 0.3f)
+    // TODO 5:   inner loop over curr.result.detections looking for a helmet
+    // TODO 6:     a helmet matches if class_id == cfg.helmet_class_id AND
+    //             boxOverlap(head, helmet.bbox) >= cfg.min_overlap_x100
+    // TODO 7:   if no helmet matched, collect this person's track_id
+    // TODO 8: if nothing collected, return
+    // TODO 9: push one SEvent: use_case "ppe_violation", camera_id and
+    //         timestamp_us from curr, the track_ids, person_count = the count

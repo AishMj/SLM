@@ -1,0 +1,11 @@
+void stage_kernel(const SFrame &curr, const SBlockConfig &cfg,
+                  std::vector<SEvent> &out)
+{
+    // TODO 1: declare a std::vector<int32_t> for track ids inside the zone
+    // TODO 2: loop over curr.result.detections
+    // TODO 3:   skip if track_id < 0
+    // TODO 4:   skip if class_id != CLASS_PERSON
+    // TODO 5:   if pointInZone(bbox.cx(), bbox.cy(), cfg.polygon) collect track_id
+    // TODO 6: if the collected count < cfg.alert_count, return
+    // TODO 7: push one SEvent: use_case "queue_length", camera_id and
+    //         timestamp_us from curr, the track_ids, person_count = the count

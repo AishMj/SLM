@@ -1,0 +1,14 @@
+void stage_kernel(const SFrame &prev, const SFrame &curr,
+                  const SBlockConfig &cfg, std::vector<SEvent> &out)
+{
+    // TODO 1: loop over curr.result.detections
+    // TODO 2:   skip if track_id < 0
+    // TODO 3:   skip if class_id != CLASS_VEHICLE
+    // TODO 4:   find the SAME track_id in prev.result.detections; skip if absent
+    // TODO 5:   dx = currBox.cx() - prevBox.cx();  dy = currBox.cy() - prevBox.cy()
+    // TODO 6:   movement = dx*dx + dy*dy; skip if movement * 1000000.0f is less
+    //           than cfg.min_movement_x1000 * cfg.min_movement_x1000
+    // TODO 7:   dot = dx * cfg.allowed_dx + dy * cfg.allowed_dy
+    // TODO 8:   a violation is dot < 0.0f
+    // TODO 9:   push one SEvent: use_case "wrong_way", camera_id and
+    //           timestamp_us from curr, that track_id, person_count 1

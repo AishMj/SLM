@@ -1,0 +1,28 @@
+{
+  "workflow_id": "wf_line_crossing",
+  "description": "object detection -> line crossing. Two frames: needs track_id to match the same object across frames.",
+  "nodes": [
+    { "id": "A", "type": "object_detection", "kind": "camera_event",
+      "camera": "cam_01", "generate_code": false,
+      "emits": "region.person",
+      "provides": ["bbox", "class_id", "confidence", "label", "track_id"] },
+
+    { "id": "B", "type": "line_crossing", "kind": "custom_analytic",
+      "camera": "cam_01", "generate_code": true,
+      "spec": {
+        "requires": ["region.person"],
+        "requires_fields": ["bbox", "track_id"],
+        "frames": "2",
+        "state": "none",
+        "libraries": [],
+        "emits": "event.crossing",
+        "provides": ["track_id", "bbox", "direction", "timestamp_us", "camera_id"],
+        "params": { "line_a": "SPt2f", "line_b": "SPt2f",
+                    "target_class_id": "int", "min_confidence_x100": "int" },
+        "rule": "A track crossed when the sign of sideOfLine changes between the previous frame and the current one for the same track_id; direction is in when the previous side was negative, otherwise out.",
+        "skeleton": "line_crossing.txt"
+      } }
+  ],
+  "edges": [ { "from": "A", "to": "B" } ],
+  "testdata": { "frames": "testdata/frames_line.json", "config": "testdata/cfg_line_crossing.json" }
+}

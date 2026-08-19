@@ -1,0 +1,28 @@
+{
+  "workflow_id": "wf_queue_length",
+  "description": "object detection -> queue length. One frame, counting against a threshold.",
+  "nodes": [
+    { "id": "A", "type": "object_detection", "kind": "camera_event",
+      "camera": "cam_01", "generate_code": false,
+      "emits": "region.person",
+      "provides": ["bbox", "class_id", "confidence", "label", "track_id"] },
+
+    { "id": "B", "type": "queue_length", "kind": "custom_analytic",
+      "camera": "cam_01", "generate_code": true,
+      "spec": {
+        "requires": ["region.person"],
+        "requires_fields": ["bbox", "track_id"],
+        "frames": "1",
+        "state": "none",
+        "libraries": [],
+        "emits": "event.usecase",
+        "provides": ["track_ids", "person_count", "timestamp_us", "camera_id"],
+        "params": { "polygon": "std::vector<SPt2f>", "alert_count": "int",
+                    "min_confidence_x100": "int" },
+        "rule": "Count distinct tracked persons whose box centre is inside the polygon and emit one event when that count is at least alert_count.",
+        "skeleton": "queue_length.txt"
+      } }
+  ],
+  "edges": [ { "from": "A", "to": "B" } ],
+  "testdata": { "frames": "testdata/frames_zone.json", "config": "testdata/cfg_queue_length.json" }
+}

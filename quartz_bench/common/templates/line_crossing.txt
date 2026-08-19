@@ -1,0 +1,15 @@
+void stage_kernel(const SFrame &prev, const SFrame &curr,
+                  const SBlockConfig &cfg, std::vector<SEvent> &out)
+{
+    // TODO 1: loop over curr.result.detections
+    // TODO 2:   skip if track_id < 0
+    // TODO 3:   skip if class_id != cfg.target_class_id
+    // TODO 4:   skip if confidence * 100 < cfg.min_confidence_x100
+    // TODO 5:   find the SAME track_id in prev.result.detections; skip if absent
+    // TODO 6:   sPrev = sideOfLine(cfg.line_a, cfg.line_b, prevBox.cx(), prevBox.cy())
+    //           sCurr = sideOfLine(cfg.line_a, cfg.line_b, currBox.cx(), currBox.cy())
+    // TODO 7:   a crossing happened ONLY when sPrev * sCurr < 0.0f
+    // TODO 8:   direction is "in" when sPrev < 0.0f, otherwise "out"
+    // TODO 9:   push one SEvent per crossing: use_case "line_crossing",
+    //           camera_id and timestamp_us from curr, that single track_id,
+    //           person_count 1, and the direction
