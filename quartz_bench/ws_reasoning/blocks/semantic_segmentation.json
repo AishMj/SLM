@@ -1,0 +1,18 @@
+{
+  "name": "semantic_segmentation",
+  "description": "Per-pixel class label map for the whole frame - dense classes, no instance separation.",
+  "kind": "camera_event",
+  "source": {
+    "header": "ai_tasks/common/include/SemanticSegmentationResult.hpp",
+    "cpp_result_type": "CSemanticSegmentationResult",
+    "cpp_element_type": "SSegMap",
+    "record_container": "seg"
+  },
+  "cardinality": "single",
+  "has_tracker": false,
+  "accepts": ["image.full_frame"],
+  "emits": "mask.semantic",
+  "subtypes": [],
+  "provides": ["width", "height", "num_classes", "map_b64"],
+  "note": "map_b64 is a base64-encoded uint8 row-major buffer, one class index per pixel. Sees people but cannot say which person, so it can never count them."
+}

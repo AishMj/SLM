@@ -1,0 +1,18 @@
+{
+  "name": "vision_language",
+  "description": "Image embedding for a full frame or a crop, plus optional zero-shot label ranking.",
+  "kind": "camera_event",
+  "source": {
+    "header": "ai_tasks/common/include/VisionLanguageResult.hpp",
+    "cpp_result_type": "CVisionLanguageResult",
+    "cpp_element_type": "SVlmOutput",
+    "record_container": "vlm"
+  },
+  "cardinality": "single",
+  "has_tracker": false,
+  "accepts": ["image.full_frame", "region.object"],
+  "emits": "embedding.image",
+  "subtypes": [],
+  "provides": ["embedding_dim", "embedding", "top_labels"],
+  "note": "embedding is an L2-normalised float32 vector. top_labels is empty unless a class list was supplied to the request. The cross-camera identity mechanism if re-ID is ever needed."
+}

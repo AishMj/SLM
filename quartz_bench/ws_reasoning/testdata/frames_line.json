@@ -1,0 +1,6 @@
+{"frames":[
+ {"timestamp_us":1000000,"detections":[{"class_id":0,"confidence":0.90,"bbox":[0.45,0.30,0.06,0.10],"track_id":7},{"class_id":0,"confidence":0.90,"bbox":[0.70,0.20,0.06,0.10],"track_id":8}]},
+ {"timestamp_us":1200000,"detections":[{"class_id":0,"confidence":0.90,"bbox":[0.45,0.40,0.06,0.10],"track_id":7},{"class_id":0,"confidence":0.90,"bbox":[0.70,0.25,0.06,0.10],"track_id":8}]},
+ {"timestamp_us":1400000,"detections":[{"class_id":0,"confidence":0.90,"bbox":[0.45,0.65,0.06,0.10],"track_id":7},{"class_id":0,"confidence":0.90,"bbox":[0.70,0.30,0.06,0.10],"track_id":8}]},
+ {"timestamp_us":1600000,"detections":[{"class_id":0,"confidence":0.90,"bbox":[0.45,0.75,0.06,0.10],"track_id":7},{"class_id":0,"confidence":0.90,"bbox":[0.70,0.32,0.06,0.10],"track_id":8}]}
+]}

@@ -1,0 +1,28 @@
+{
+  "workflow_id": "wf_wrong_way",
+  "description": "object detection -> wrong way. Two frames, movement vector against an allowed direction.",
+  "nodes": [
+    { "id": "A", "type": "object_detection", "kind": "camera_event",
+      "camera": "cam_01", "generate_code": false,
+      "emits": "region.vehicle",
+      "provides": ["bbox", "class_id", "confidence", "label", "track_id"] },
+
+    { "id": "B", "type": "wrong_way", "kind": "custom_analytic",
+      "camera": "cam_01", "generate_code": true,
+      "spec": {
+        "requires": ["region.vehicle"],
+        "requires_fields": ["bbox", "track_id"],
+        "frames": "2",
+        "state": "none",
+        "libraries": [],
+        "emits": "event.usecase",
+        "provides": ["track_ids", "timestamp_us", "camera_id"],
+        "params": { "allowed_dx": "float", "allowed_dy": "float",
+                    "min_movement_x1000": "int" },
+        "rule": "For each vehicle present in both frames compute the movement vector of its box centre; if the dot product with the allowed direction is negative and the movement is large enough, emit a violation.",
+        "skeleton": "wrong_way.txt"
+      } }
+  ],
+  "edges": [ { "from": "A", "to": "B" } ],
+  "testdata": { "frames": "testdata/frames_wrongway.json", "config": "testdata/cfg_wrong_way.json" }
+}

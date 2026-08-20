@@ -1,0 +1,18 @@
+{
+  "name": "pose_estimation",
+  "description": "Per-person skeleton: a box plus 17 COCO keypoints, each with its own confidence.",
+  "kind": "camera_event",
+  "source": {
+    "header": "ai_tasks/common/include/PoseEstimationResult.hpp",
+    "cpp_result_type": "CPoseEstimationResult",
+    "cpp_element_type": "SPersonPose",
+    "record_container": "poses"
+  },
+  "cardinality": "per_object",
+  "has_tracker": true,
+  "accepts": ["image.full_frame", "region.person"],
+  "emits": "keypoints.pose",
+  "subtypes": [],
+  "provides": ["bbox", "confidence", "track_id", "keypoints"],
+  "note": "keypoints is a fixed-size array of 17 {x, y, confidence} in COCO order (0=nose ... 16=right_ankle). No class_id/label - this task only ever describes people."
+}

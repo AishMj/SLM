@@ -1,0 +1,28 @@
+{
+  "workflow_id": "wf_ppe_compliance",
+  "description": "object detection -> PPE compliance. One frame, two box classes, spatial containment.",
+  "nodes": [
+    { "id": "A", "type": "object_detection", "kind": "camera_event",
+      "camera": "cam_01", "generate_code": false,
+      "emits": "region.person",
+      "provides": ["bbox", "class_id", "confidence", "label", "track_id"] },
+
+    { "id": "B", "type": "ppe_compliance", "kind": "custom_analytic",
+      "camera": "cam_01", "generate_code": true,
+      "spec": {
+        "requires": ["region.person"],
+        "requires_fields": ["bbox", "class_id", "track_id"],
+        "frames": "1",
+        "state": "none",
+        "libraries": [],
+        "emits": "event.usecase",
+        "provides": ["track_ids", "person_count", "timestamp_us", "camera_id"],
+        "params": { "person_class_id": "int", "helmet_class_id": "int",
+                    "min_overlap_x100": "int" },
+        "rule": "For each person take the top 30 percent of their box as the head region; if no helmet detection overlaps that region by at least min_overlap_x100 percent, emit a violation for that track.",
+        "skeleton": "ppe_compliance.txt"
+      } }
+  ],
+  "edges": [ { "from": "A", "to": "B" } ],
+  "testdata": { "frames": "testdata/frames_ppe.json", "config": "testdata/cfg_ppe_compliance.json" }
+}

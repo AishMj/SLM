@@ -1,0 +1,18 @@
+{
+  "name": "object_detection",
+  "description": "Locate and classify objects as labelled, scored bounding boxes.",
+  "kind": "camera_event",
+  "source": {
+    "header": "ai_tasks/common/include/ObjectDetectionResult.hpp",
+    "cpp_result_type": "CObjectDetectionResult",
+    "cpp_element_type": "SDetection",
+    "record_container": "detections"
+  },
+  "cardinality": "per_object",
+  "has_tracker": true,
+  "accepts": ["image.full_frame"],
+  "emits": "region.object",
+  "subtypes": ["region.person", "region.vehicle", "region.bicycle"],
+  "provides": ["bbox", "class_id", "confidence", "label", "track_id"],
+  "note": "track_id is -1 until the tracker assigns one; class_id selects which subtype this detection is."
+}
